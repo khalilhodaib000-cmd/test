@@ -42,8 +42,6 @@
             margin: 10px 0 20px 0;
             text-align: center;
         }
-
-        /* نافذة تفعيل الصوت وجمع البيانات */
         #enableAudioOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -68,13 +66,13 @@
         }
         .modal-box h3 { color: #60a5fa; margin-top: 0; text-align: center; }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .form-group label {
             display: block;
             font-size: 13px;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         .form-group input {
             width: 100%;
@@ -102,6 +100,17 @@
             transition: background 0.3s;
         }
         .enable-btn:hover { background-color: #059669; }
+        .skip-btn {
+            width: 100%;
+            background-color: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .skip-btn:hover { color: white; }
 
         .stepper-box {
             background-color: #0f172a;
@@ -199,23 +208,23 @@
 </head>
 <body>
 
-    <!-- نافذة تفعيل الصوت وجمع معلومات الزبون -->
     <div id="enableAudioOverlay">
         <div class="modal-box">
             <h3>🍔 مطعمنا الكريم</h3>
-            <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 15px;">أدخل معلوماتك ليصلك تنبيه الطلب وعروضنا المميزة:</p>
+            <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 12px;">أدخل معلوماتك (اختياري) ليصلك عروضنا:</p>
             
             <div class="form-group">
-                <label>الاسم الكريم</label>
+                <label>الاسم (اختياري)</label>
                 <input type="text" id="clientName" placeholder="أدخل اسمك">
             </div>
             
             <div class="form-group">
-                <label>رقم الهاتف أو البريد الإلكتروني</label>
-                <input type="text" id="clientContact" placeholder="07XXXXXXXX أو email@domain.com">
+                <label>رقم الهاتف أو البريد (اختياري)</label>
+                <input type="text" id="clientContact" placeholder="07XXXXXXXX">
             </div>
 
             <button class="enable-btn" onclick="activateApp()">تفعيل ومتابعة الطلب</button>
+            <button class="skip-btn" onclick="activateApp()">تخطي ومتابعة ←</button>
         </div>
     </div>
 
@@ -261,7 +270,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc, collection, addServerTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         const firebaseConfig = {
@@ -294,19 +303,16 @@
             const name = document.getElementById('clientName').value.trim();
             const contact = document.getElementById('clientContact').value.trim();
 
-            if (!name || !contact) {
-                alert('الرجاء إدخال الاسم ورقم الهاتف أو البريد الإلكتروني للمتابعة!');
-                return;
-            }
-
             try {
-                // حفظ بيانات الزبون في مجموعة customers ضمن قاعدة البيانات
-                await setDoc(doc(collection(db, "customers")), {
-                    name: name,
-                    contact: contact,
-                    orderId: orderId || "غير محدد",
-                    createdAt: new Date()
-                });
+                // إذا كتب الزبون بياناته، يتم حفظها. وإذا تركها فارغة لا يتم حفظ بيانات فارغة
+                if (name || contact) {
+                    await setDoc(doc(collection(db, "customers")), {
+                        name: name || "زائر بدون اسم",
+                        contact: contact || "غير محدد",
+                        orderId: orderId || "غير محدد",
+                        createdAt: new Date()
+                    });
+                }
 
                 await alertAudio.play();
                 alertAudio.pause();
