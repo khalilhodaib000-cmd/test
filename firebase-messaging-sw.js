@@ -12,13 +12,12 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// التعامل مع الإشعارات عندما يكون التطبيق في الخلفية أو مغلقاً
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/icon.png' // اختياري
+    icon: '/icon.png'
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);

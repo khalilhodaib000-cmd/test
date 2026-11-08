@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة الكاشير - إدارة عدة طلبات</title>
-    <!-- مكتبة توليد الـ QR Code -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -62,8 +61,6 @@
             transition: background 0.3s;
         }
         .btn:hover { background-color: var(--primary-hover); }
-        
-        /* جدول الطلبات النشطة */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -87,8 +84,6 @@
             font-size: 14px;
         }
         .btn-qr:hover { background-color: #7c3aed; }
-        
-        /* نافذة منبثقة لعرض الـ QR Code */
         #qrModal {
             display: none;
             position: fixed;
@@ -109,7 +104,6 @@
 <body>
 
     <div class="container">
-        <!-- لوحة إضافة طلب جديد -->
         <div class="header-card">
             <h2>🍽️ لوحة الكاشير الذكية</h2>
             <p>إصدار وتتبع طلبات الزبائن المتعددة</p>
@@ -119,7 +113,6 @@
             </div>
         </div>
 
-        <!-- قائمة الطلبات الحالية -->
         <div class="orders-card">
             <h3>📋 الطلبات النشطة حالياً</h3>
             <table>
@@ -131,13 +124,11 @@
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
-                    <!-- سيتم تعبئة الطلبات ديناميكياً هنا -->
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- نافذة عرض الـ QR -->
     <div id="qrModal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 id="modalTitle">QR Code للطلب</h3>
@@ -162,7 +153,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // إضافة طلب جديد بالرقم اليدوي الذي يحدده الكاشير
         window.addNewOrder = async function() {
             const orderInput = document.getElementById('orderInput');
             const orderId = orderInput.value.trim();
@@ -177,25 +167,23 @@
                     status: "cooking",
                     createdAt: new Date()
                 });
-                orderInput.value = ""; // تفريغ الحقل بعد الإضافة
+                orderInput.value = "";
             } catch (e) {
-                console.error("خطأ في إضافة الطلب: ", e);
+                console.error("Error adding order: ", e);
                 alert("حدث خطأ أثناء إضافة الطلب.");
             }
         };
 
-        // تحديث حالة الطلب إلى جاهز
         window.markReady = async function(orderId) {
             try {
                 await updateDoc(doc(db, "orders", orderId), {
                     status: "ready"
                 });
             } catch (e) {
-                console.error("خطأ في التحديث: ", e);
+                console.error("Error updating order: ", e);
             }
         };
 
-        // عرض الـ QR Code
         window.showQrCode = function(orderId) {
             const container = document.getElementById("qrcodeContainer");
             container.innerHTML = "";
@@ -216,7 +204,6 @@
             document.getElementById("qrModal").style.display = "none";
         };
 
-        // استماع لحظي لتحديث جدول الكاشير
         onSnapshot(collection(db, "orders"), (snapshot) => {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = "";
