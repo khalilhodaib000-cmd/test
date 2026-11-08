@@ -42,6 +42,8 @@
             margin: 10px 0 20px 0;
             text-align: center;
         }
+
+        /* نافذة تفعيل الصوت وجمع البيانات */
         #enableAudioOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -53,19 +55,54 @@
             z-index: 999;
             text-align: center;
             padding: 20px;
+            overflow-y: auto;
+        }
+        .modal-box {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: right;
+        }
+        .modal-box h3 { color: #60a5fa; margin-top: 0; text-align: center; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
         }
         .enable-btn {
+            width: 100%;
             background-color: #10b981;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 12px;
-            font-size: 18px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: background 0.3s;
         }
+        .enable-btn:hover { background-color: #059669; }
+
         .stepper-box {
             background-color: #0f172a;
             border-radius: 12px;
@@ -80,9 +117,7 @@
             margin-bottom: 24px;
             position: relative;
         }
-        .stepper-step:last-child {
-            margin-bottom: 0;
-        }
+        .stepper-step:last-child { margin-bottom: 0; }
         .stepper-line {
             position: absolute;
             right: 19px;
@@ -92,9 +127,7 @@
             background-color: #334155;
             z-index: 1;
         }
-        .stepper-step:last-child .stepper-line {
-            display: none;
-        }
+        .stepper-step:last-child .stepper-line { display: none; }
         .stepper-circle {
             width: 40px;
             height: 40px;
@@ -166,10 +199,24 @@
 </head>
 <body>
 
+    <!-- نافذة تفعيل الصوت وجمع معلومات الزبون -->
     <div id="enableAudioOverlay">
-        <h2 style="color: #fff; margin-bottom: 10px;">🍔 مطعمنا الكريم</h2>
-        <p style="color: #94a3b8; max-width: 300px; font-size: 14px;">اضغط على الزر أدناه لتفعيل التنبيهات الصوتية وإشعارات الهاتف عند جاهزية طلبك.</p>
-        <button class="enable-btn" onclick="activateApp()">تفعيل ومتابعة الطلب</button>
+        <div class="modal-box">
+            <h3>🍔 مطعمنا الكريم</h3>
+            <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 15px;">أدخل معلوماتك ليصلك تنبيه الطلب وعروضنا المميزة:</p>
+            
+            <div class="form-group">
+                <label>الاسم الكريم</label>
+                <input type="text" id="clientName" placeholder="أدخل اسمك">
+            </div>
+            
+            <div class="form-group">
+                <label>رقم الهاتف أو البريد الإلكتروني</label>
+                <input type="text" id="clientContact" placeholder="07XXXXXXXX أو email@domain.com">
+            </div>
+
+            <button class="enable-btn" onclick="activateApp()">تفعيل ومتابعة الطلب</button>
+        </div>
     </div>
 
     <div class="card">
@@ -214,7 +261,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, setDoc, collection, addServerTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         const firebaseConfig = {
@@ -244,7 +291,23 @@
         let alarmManuallyStopped = false;
 
         window.activateApp = async function() {
+            const name = document.getElementById('clientName').value.trim();
+            const contact = document.getElementById('clientContact').value.trim();
+
+            if (!name || !contact) {
+                alert('الرجاء إدخال الاسم ورقم الهاتف أو البريد الإلكتروني للمتابعة!');
+                return;
+            }
+
             try {
+                // حفظ بيانات الزبون في مجموعة customers ضمن قاعدة البيانات
+                await setDoc(doc(collection(db, "customers")), {
+                    name: name,
+                    contact: contact,
+                    orderId: orderId || "غير محدد",
+                    createdAt: new Date()
+                });
+
                 await alertAudio.play();
                 alertAudio.pause();
                 alertAudio.currentTime = 0;
