@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بيجر المطعم الذكي - متابعة الطلب</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: right;
+            transition: background 0.5s ease;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 30px 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            z-index: 2;
+        }
+        h2 { color: #60a5fa; margin-top: 0; text-align: center; }
+        .order-number {
+            font-size: 42px;
+            font-weight: bold;
+            color: #f59e0b;
+            margin: 10px 0 20px 0;
+            text-align: center;
+        }
+
+        /* شاشة تفعيل الصوت الأولية */
+        #enableAudioOverlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            text-align: center;
+            padding: 20px;
+        }
+        .enable-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* تنسيقات الـ Stepper */
+        .stepper-box {
+            background-color: #0f172a;
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            box-sizing: border-box;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            margin-top: 15px;
+        }
+
+        .stepper-step {
+            display: flex;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .stepper-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .stepper-line {
+            position: absolute;
+            right: 19px;
+            top: 40px;
+            bottom: -24px;
+            width: 2px;
+            background-color: #334155;
+            z-index: 1;
+        }
+
+        .stepper-step:last-child .stepper-line {
+            display: none;
+        }
+
+        .stepper-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 16px;
+            z-index: 2;
+            font-weight: bold;
+        }
+
+        .stepper-completed .stepper-circle { background-color: #10b981; color: white; }
+        .stepper-completed .stepper-title { color: #10b981; }
+        .stepper-completed .stepper-status { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+
+        .stepper-active .stepper-circle {
+            background-color: #f59e0b;
+            color: white;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        .stepper-active .stepper-title { color: #f59e0b; }
+        .stepper-active .stepper-status { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+        .stepper-pending .stepper-circle { border: 2px solid #334155; color: #64748b; background-color: #1e293b; }
+        .stepper-pending .stepper-title { color: #64748b; }
+        .stepper-pending .stepper-status { background-color: #1e293b; color: #64748b; }
+
+        .stepper-content { flex: 1; }
+        .stepper-title { font-weight: 600; font-size: 16px; margin-bottom: 2px; }
+        .stepper-status { font-size: 12px; display: inline-block; padding: 3px 10px; border-radius: 12px; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .ready-alert-banner {
+            display: none;
+            background: #10b981;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 16px;
+            animation: bounce 0.8s infinite alternate;
+            text-align: center;
+        }
+
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.02); }
+        }
+
+        /* تأثير وميض الخلفية عند الجهوزية */
+        body.flash-bg {
+            animation: flashScreen 0.8s infinite alternate;
+        }
+        @keyframes flashScreen {
+            from { background-color: #0f172a; }
+            to { background-color: #064e3b; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- شاشة تفعيل الصوت -->
+    <div id="enableAudioOverlay">
+        <h2 style="color: #fff; margin-bottom: 10px;">🍔 مطعمنا الكريم</h2>
+        <p style="color: #94a3b8; max-width: 300px; font-size: 14px;">اضغط على الزر أدناه لتفعيل التنبيهات الصوتية المستمرة عند جاهزية طلبك.</p>
+        <button class="enable-btn" onclick="activateApp()">تفعيل ومتابعة الطلب</button>
+    </div>
+
+    <div class="card">
+        <h2>🍔 مطعمنا الكريم</h2>
+        <p style="text-align: center; color: var(--text-muted); margin: 0;">رقم طلبك الحالي</p>
+        <div class="order-number" id="displayOrder">...</div>
+        
+        <div class="stepper-box">
+            <div class="stepper-step stepper-completed" id="step1">
+                <div class="stepper-line"></div>
+                <div class="stepper-circle">✓</div>
+                <div class="stepper-content">
+                    <div class="stepper-title">تم استلام الطلب</div>
+                    <div class="stepper-status">تم بنجاح</div>
+                </div>
+            </div>
+
+            <div class="stepper-step stepper-active" id="step2">
+                <div class="stepper-line"></div>
+                <div class="stepper-circle">2</div>
+                <div class="stepper-content">
+                    <div class="stepper-title">جاري التحضير</div>
+                    <div class="stepper-status" id="statusText2">الطلب في المطبخ الآن</div>
+                </div>
+            </div>
+
+            <div class="stepper-step stepper-pending" id="step3">
+                <div class="stepper-circle">3</div>
+                <div class="stepper-content">
+                    <div class="stepper-title">جاهز للاستلام</div>
+                    <div class="stepper-status" id="statusText3">بانتظار جهوزية الطلب</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="readyBanner" class="ready-alert-banner">
+            🔔 طلبك جاهز! توجه إلى الكونتر فوراً.
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7IuqZfeJiBBD2KlH0Y1YFGRKQVE7Xrx4",
+            authDomain: "test-f4f89.firebaseapp.com",
+            projectId: "test-f4f89",
+            storageBucket: "test-f4f89.firebasestorage.app",
+            messagingSenderId: "933874949137",
+            appId: "1:933874949137:web:0516c64d7496ab45fda5b0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order');
+
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const readyBanner = document.getElementById('readyBanner');
+
+        // إعداد الصوت ليقوم بالتكرار المستمر (Loop)
+        const alertAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        alertAudio.loop = true; 
+
+        window.activateApp = function() {
+            alertAudio.play().then(() => {
+                alertAudio.pause();
+                alertAudio.currentTime = 0;
+            }).catch(e => console.log(e));
+
+            document.getElementById('enableAudioOverlay').style.display = 'none';
+        };
+
+        if(orderId) {
+            document.getElementById('displayOrder').innerText = "#" + orderId;
+            
+            onSnapshot(doc(db, "orders", orderId), (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    if(data.status === "ready") {
+                        step2.className = "stepper-step stepper-completed";
+                        document.getElementById('statusText2').innerText = "تم إكمال التحضير";
+
+                        step3.className = "stepper-step stepper-active";
+                        document.getElementById('statusText3').innerText = "جاهز الآن للاستلام";
+
+                        readyBanner.style.display = "block";
+                        
+                        // تفعيل وميض الشاشة الخلفي كبديل مرئي قوي للاهتزاز
+                        document.body.classList.add("flash-bg");
+
+                        // تشغيل الصوت المتكرر (Loop)
+                        alertAudio.play().catch(err => console.log("Audio play blocked", err));
+
+                    } else {
+                        step2.className = "stepper-step stepper-active";
+                        document.getElementById('statusText2').innerText = "الطلب في المطبخ الآن";
+
+                        step3.className = "stepper-step stepper-pending";
+                        document.getElementById('statusText3').innerText = "بانتظار جهوزية الطلب";
+                        
+                        readyBanner.style.display = "none";
+                        document.body.classList.remove("flash-bg");
+                        alertAudio.pause();
+                        alertAudio.currentTime = 0;
+                    }
+                } else {
+                    document.getElementById('displayOrder').innerText = "❌";
+                    document.querySelector('.stepper-box').innerHTML = "<p style='color: #ef4444; text-align: center; margin: 10px 0;'>لم يتم العثور على بيانات هذا الطلب.</p>";
+                }
+            });
+        } else {
+            document.getElementById('displayOrder').innerText = "خطأ";
+            document.querySelector('.stepper-box').innerHTML = "<p style='color: #ef4444; text-align: center; margin: 10px 0;'>رقم الطلب غير موجود في الرابط.</p>";
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الكاشير - إدارة عدة طلبات</title>
+    <!-- مكتبة توليد الـ QR Code -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .header-card, .orders-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        h2, h3 { color: #60a5fa; margin-top: 0; }
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 12px 15px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover { background-color: var(--primary-hover); }
+        
+        /* جدول الطلبات النشطة */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+        th { color: var(--text-muted); }
+        .btn-ready {
+            background-color: var(--success);
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .btn-ready:hover { background-color: #059669; }
+        .btn-qr {
+            background-color: #8b5cf6;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        .btn-qr:hover { background-color: #7c3aed; }
+        
+        /* نافذة منبثقة لعرض الـ QR Code */
+        #qrModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- لوحة إضافة طلب جديد -->
+        <div class="header-card">
+            <h2>🍽️ لوحة الكاشير الذكية</h2>
+            <p>إصدار وتتبع طلبات الزبائن المتعددة</p>
+            <div class="input-row">
+                <input type="text" id="orderInput" placeholder="أدخل رقم الطلب يدوياً (مثال: 54)">
+                <button class="btn" onclick="addNewOrder()">إضافة الطلب</button>
+            </div>
+        </div>
+
+        <!-- قائمة الطلبات الحالية -->
+        <div class="orders-card">
+            <h3>📋 الطلبات النشطة حالياً</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <!-- سيتم تعبئة الطلبات ديناميكياً هنا -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- نافذة عرض الـ QR -->
+    <div id="qrModal" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 id="modalTitle">QR Code للطلب</h3>
+            <div id="qrcodeContainer"></div>
+            <p style="font-size: 12px; color: #666; margin-top: 10px;">اضغط في أي مكان للإغلاق</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7IuqZfeJiBBD2KlH0Y1YFGRKQVE7Xrx4",
+            authDomain: "test-f4f89.firebaseapp.com",
+            projectId: "test-f4f89",
+            storageBucket: "test-f4f89.firebasestorage.app",
+            messagingSenderId: "933874949137",
+            appId: "1:933874949137:web:0516c64d7496ab45fda5b0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // إضافة طلب جديد بالرقم اليدوي الذي يحدده الكاشير
+        window.addNewOrder = async function() {
+            const orderInput = document.getElementById('orderInput');
+            const orderId = orderInput.value.trim();
+            if(!orderId) {
+                alert('الرجاء إدخال رقم الطلب!');
+                return;
+            }
+
+            try {
+                await setDoc(doc(db, "orders", orderId), {
+                    orderId: orderId,
+                    status: "cooking",
+                    createdAt: new Date()
+                });
+                orderInput.value = ""; // تفريغ الحقل بعد الإضافة
+            } catch (e) {
+                console.error("خطأ في إضافة الطلب: ", e);
+                alert("حدث خطأ أثناء إضافة الطلب.");
+            }
+        };
+
+        // تحديث حالة الطلب إلى جاهز
+        window.markReady = async function(orderId) {
+            try {
+                await updateDoc(doc(db, "orders", orderId), {
+                    status: "ready"
+                });
+            } catch (e) {
+                console.error("خطأ في التحديث: ", e);
+            }
+        };
+
+        // عرض الـ QR Code
+        window.showQrCode = function(orderId) {
+            const container = document.getElementById("qrcodeContainer");
+            container.innerHTML = "";
+            document.getElementById("modalTitle").innerText = "QR Code للطلب #" + orderId;
+            
+            const customerUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'customer.html?order=' + encodeURIComponent(orderId);                
+            
+            new QRCode(container, {
+                text: customerUrl,
+                width: 180,
+                height: 180
+            });
+
+            document.getElementById("qrModal").style.display = "flex";
+        };
+
+        window.closeModal = function() {
+            document.getElementById("qrModal").style.display = "none";
+        };
+
+        // استماع لحظي لتحديث جدول الكاشير
+        onSnapshot(collection(db, "orders"), (snapshot) => {
+            const tbody = document.getElementById('ordersTableBody');
+            tbody.innerHTML = "";
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const isReady = data.status === "ready";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: bold; font-size: 18px;">#${data.orderId}</td>
+                    <td>
+                        <span style="padding: 5px 10px; border-radius: 12px; font-size: 13px; background: ${isReady ? '#10b981' : '#d97706'}; color: white;">
+                            ${isReady ? '✅ جاهز للاستلام' : '⏳ قيد التحضير'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
+                        ${!isReady ? `<button class="btn btn-ready" onclick="markReady('${data.orderId}')">إرسال جاهز</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    </script>
+</body>
+</html>
