@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شاشة التحليلات - Pager App</title>
+    <!-- مكتبة الرسوم البيانية Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .app-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .app-header h1 {
+            font-size: 22px;
+            color: var(--primary);
+            margin: 0;
+        }
+        .title-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .title-card h2 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--text-main);
+        }
+        .badge-number {
+            background-color: var(--primary);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .metric-title {
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        .metric-trend {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #10b981;
+        }
+        .chart-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+        .footer-link {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin-top: 30px;
+        }
+        @media(max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="app-header">
+            <span>📡</span>
+            <h1>Pager App</h1>
+        </div>
+
+        <div class="title-card">
+            <div>
+                <h2>شاشة التحليلات</h2>
+                <div class="subtitle">نسبة الاستلام، متوسط الانتظار وأطوله، وأوقات الذروة بالساعة، مع مقارنة يومية بالأمس — لكل فرع.</div>
+            </div>
+            <div class="badge-number">5</div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-title">متوسط الانتظار</div>
+                <div class="metric-value">8 د</div>
+                <div class="metric-trend">↓ 1 دقيقة</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">طلبات اليوم</div>
+                <div class="metric-value" id="todayOrdersCount">47</div>
+                <div class="metric-trend">↑ 12 طلب</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">نسبة الاستلام</div>
+                <div class="metric-value">95%</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">الطلبات — آخر 7 أيام</div>
+            <canvas id="weeklyChart" height="110"></canvas>
+        </div>
+
+        <div class="footer-link">pager-app.com</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7IuqZfeJiBBD2KlH0Y1YFGRKQVE7Xrx4",
+            authDomain: "test-f4f89.firebaseapp.com",
+            projectId: "test-f4f89",
+            storageBucket: "test-f4f89.firebasestorage.app",
+            messagingSenderId: "933874949137",
+            appId: "1:933874949137:web:0516c64d7496ab45fda5b0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadAnalytics() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "orders"));
+                let totalOrders = querySnapshot.size;
+                if(totalOrders > 0) {
+                    document.getElementById('todayOrdersCount').innerText = totalOrders;
+                }
+            } catch (e) {
+                console.error("Error loading analytics:", e);
+            }
+        }
+
+        loadAnalytics();
+
+        const ctx = document.getElementById('weeklyChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'اليوم'],
+                datasets: [{
+                    data: [18, 24, 20, 32, 28, 22, 47],
+                    backgroundColor: [
+                        '#93c5fd', '#93c5fd', '#93c5fd', '#93c5fd', '#93c5fd', '#93c5fd', '#2563eb'
+                    ],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { display: false },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
