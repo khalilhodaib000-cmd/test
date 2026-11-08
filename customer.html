@@ -24,15 +24,20 @@
             text-align: right;
             transition: background 0.5s ease;
         }
-        .card {
-            background: var(--card-bg);
-            padding: 30px 20px;
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        .main-container {
             width: 100%;
             max-width: 400px;
-            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             z-index: 2;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 25px 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
         }
         h2 { color: #60a5fa; margin-top: 0; text-align: center; }
         .order-number {
@@ -42,10 +47,12 @@
             margin: 10px 0 20px 0;
             text-align: center;
         }
+
+        /* شاشة تفعيل الصوت الأولية البسيطة */
         #enableAudioOverlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.98);
+            background: rgba(15, 23, 42, 0.95);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -53,24 +60,41 @@
             z-index: 999;
             text-align: center;
             padding: 20px;
-            overflow-y: auto;
         }
-        .modal-box {
-            background: #1e293b;
-            padding: 25px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 350px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            text-align: right;
+        .enable-btn {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
-        .modal-box h3 { color: #60a5fa; margin-top: 0; text-align: center; }
+
+        /* تنسيقات صندوق جمع البيانات المدمج أسفل الصفحة */
+        .promo-box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
+        }
+        .promo-box h3 {
+            color: #60a5fa;
+            font-size: 16px;
+            margin-top: 0;
+            margin-bottom: 8px;
+            text-align: center;
+        }
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .form-group label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-muted);
             margin-bottom: 4px;
         }
@@ -85,33 +109,29 @@
             box-sizing: border-box;
             outline: none;
         }
-        .enable-btn {
+        .save-btn {
             width: 100%;
-            background-color: #10b981;
+            background-color: #3b82f6;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-size: 16px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            margin-top: 5px;
             transition: background 0.3s;
         }
-        .enable-btn:hover { background-color: #059669; }
-        .skip-btn {
-            width: 100%;
-            background-color: transparent;
-            color: var(--text-muted);
-            border: none;
-            padding: 8px;
-            font-size: 13px;
-            cursor: pointer;
+        .save-btn:hover { background-color: #2563eb; }
+        #saveMsg {
+            text-align: center;
+            font-size: 12px;
+            color: #10b981;
             margin-top: 8px;
+            display: none;
         }
-        .skip-btn:hover { color: white; }
 
+        /* تنسيقات الـ Stepper */
         .stepper-box {
             background-color: #0f172a;
             border-radius: 12px;
@@ -208,64 +228,73 @@
 </head>
 <body>
 
+    <!-- نافذة تفعيل الصوت البسيطة لمرة واحدة -->
     <div id="enableAudioOverlay">
-        <div class="modal-box">
-            <h3>🍔 مطعمنا الكريم</h3>
-            <p style="color: var(--text-muted); font-size: 13px; text-align: center; margin-bottom: 12px;">أدخل معلوماتك (اختياري) ليصلك عروضنا:</p>
+        <h2 style="color: #fff; margin-bottom: 10px;">🍔 مطعمنا الكريم</h2>
+        <p style="color: #94a3b8; max-width: 300px; font-size: 14px;">اضغط على الزر أدناه لتفعيل التنبيهات الصوتية عند جاهزية طلبك.</p>
+        <button class="enable-btn" onclick="activateApp()">تفعيل ومتابعة الطلب</button>
+    </div>
+
+    <div class="main-container">
+        <!-- بطاقة متابعة الطلب الأساسية -->
+        <div class="card">
+            <h2>🍔 مطعمنا الكريم</h2>
+            <p style="text-align: center; color: var(--text-muted); margin: 0;">رقم طلبك الحالي</p>
+            <div class="order-number" id="displayOrder">...</div>
+            
+            <div class="stepper-box">
+                <div class="stepper-step stepper-completed" id="step1">
+                    <div class="stepper-line"></div>
+                    <div class="stepper-circle">✓</div>
+                    <div class="stepper-content">
+                        <div class="stepper-title">تم استلام الطلب</div>
+                        <div class="stepper-status">تم بنجاح</div>
+                    </div>
+                </div>
+
+                <div class="stepper-step stepper-active" id="step2">
+                    <div class="stepper-line"></div>
+                    <div class="stepper-circle">2</div>
+                    <div class="stepper-content">
+                        <div class="stepper-title">جاري التحضير</div>
+                        <div class="stepper-status" id="statusText2">الطلب في المطبخ الآن</div>
+                    </div>
+                </div>
+
+                <div class="stepper-step stepper-pending" id="step3">
+                    <div class="stepper-circle">3</div>
+                    <div class="stepper-content">
+                        <div class="stepper-title">جاهز للاستلام</div>
+                        <div class="stepper-status" id="statusText3">بانتظار جهوزية الطلب</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="readyBanner" class="ready-alert-banner">
+                🔔 طلبك جاهز! توجه إلى الكونتر فوراً.
+            </div>
+            
+            <button id="stopAlarmBtn" class="stop-alarm-btn" onclick="stopAlarm()">🔕 إيقاف التنبيه الصوتي</button>
+        </div>
+
+        <!-- صندوق جمع بيانات الزبون الاختياري (مدمج أسفل الصفحة في المكان المحدد) -->
+        <div class="promo-box">
+            <h3>🎁 انضم لعائلة المطعم</h3>
+            <p style="color: var(--text-muted); font-size: 12px; text-align: center; margin-bottom: 10px;">احصل على آخر العروض والخصومات (اختياري):</p>
             
             <div class="form-group">
-                <label>الاسم (اختياري)</label>
-                <input type="text" id="clientName" placeholder="أدخل اسمك">
+                <label>الاسم</label>
+                <input type="text" id="clientName" placeholder="أدخل اسمك الكريم">
             </div>
             
             <div class="form-group">
-                <label>رقم الهاتف أو البريد (اختياري)</label>
+                <label>رقم الهاتف أو البريد الإلكتروني</label>
                 <input type="text" id="clientContact" placeholder="07XXXXXXXX">
             </div>
 
-            <button class="enable-btn" onclick="activateApp()">تفعيل ومتابعة الطلب</button>
-            <button class="skip-btn" onclick="activateApp()">تخطي ومتابعة ←</button>
+            <button class="save-btn" onclick="saveCustomerData()">حفظ ومتابعة العروض</button>
+            <div id="saveMsg">✓ تم حفظ بياناتك بنجاح، شكراً لك!</div>
         </div>
-    </div>
-
-    <div class="card">
-        <h2>🍔 مطعمنا الكريم</h2>
-        <p style="text-align: center; color: var(--text-muted); margin: 0;">رقم طلبك الحالي</p>
-        <div class="order-number" id="displayOrder">...</div>
-        
-        <div class="stepper-box">
-            <div class="stepper-step stepper-completed" id="step1">
-                <div class="stepper-line"></div>
-                <div class="stepper-circle">✓</div>
-                <div class="stepper-content">
-                    <div class="stepper-title">تم استلام الطلب</div>
-                    <div class="stepper-status">تم بنجاح</div>
-                </div>
-            </div>
-
-            <div class="stepper-step stepper-active" id="step2">
-                <div class="stepper-line"></div>
-                <div class="stepper-circle">2</div>
-                <div class="stepper-content">
-                    <div class="stepper-title">جاري التحضير</div>
-                    <div class="stepper-status" id="statusText2">الطلب في المطبخ الآن</div>
-                </div>
-            </div>
-
-            <div class="stepper-step stepper-pending" id="step3">
-                <div class="stepper-circle">3</div>
-                <div class="stepper-content">
-                    <div class="stepper-title">جاهز للاستلام</div>
-                    <div class="stepper-status" id="statusText3">بانتظار جهوزية الطلب</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="readyBanner" class="ready-alert-banner">
-            🔔 طلبك جاهز! توجه إلى الكونتر فوراً.
-        </div>
-        
-        <button id="stopAlarmBtn" class="stop-alarm-btn" onclick="stopAlarm()">🔕 إيقاف التنبيه الصوتي</button>
     </div>
 
     <script type="module">
@@ -300,20 +329,7 @@
         let alarmManuallyStopped = false;
 
         window.activateApp = async function() {
-            const name = document.getElementById('clientName').value.trim();
-            const contact = document.getElementById('clientContact').value.trim();
-
             try {
-                // إذا كتب الزبون بياناته، يتم حفظها. وإذا تركها فارغة لا يتم حفظ بيانات فارغة
-                if (name || contact) {
-                    await setDoc(doc(collection(db, "customers")), {
-                        name: name || "زائر بدون اسم",
-                        contact: contact || "غير محدد",
-                        orderId: orderId || "غير محدد",
-                        createdAt: new Date()
-                    });
-                }
-
                 await alertAudio.play();
                 alertAudio.pause();
                 alertAudio.currentTime = 0;
@@ -333,6 +349,33 @@
             }
 
             document.getElementById('enableAudioOverlay').style.display = 'none';
+        };
+
+        // دالة حفظ بيانات الزبون الاختيارية من الصندوق السفلي
+        window.saveCustomerData = async function() {
+            const name = document.getElementById('clientName').value.trim();
+            const contact = document.getElementById('clientContact').value.trim();
+
+            if (!name && !contact) {
+                alert('الرجاء إدخال اسمك أو رقمك للحفظ.');
+                return;
+            }
+
+            try {
+                await setDoc(doc(collection(db, "customers")), {
+                    name: name || "زائر بدون اسم",
+                    contact: contact || "غير محدد",
+                    orderId: orderId || "غير محدد",
+                    createdAt: new Date()
+                });
+
+                document.getElementById('saveMsg').style.display = 'block';
+                document.getElementById('clientName').disabled = true;
+                document.getElementById('clientContact').disabled = true;
+            } catch (e) {
+                console.error("Error saving customer:", e);
+                alert("حدث خطأ أثناء الحفظ.");
+            }
         };
 
         window.stopAlarm = function() {
@@ -376,7 +419,7 @@
                         stopAlarmBtn.style.display = "none";
                         document.body.classList.remove("flash-bg");
                         alertAudio.pause();
-                        alertAudio.currentTime = 0;
+                        alertAudio.currentTime, 0;
                         alarmManuallyStopped = false;
                     }
                 } else {
