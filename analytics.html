@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحليلات والإحصائيات - Pager App</title>
-    <!-- مكتبة الرسوم البيانية Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -24,7 +23,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: auto;
         }
         .app-header {
@@ -145,20 +144,20 @@
 
         <div class="title-card">
             <div>
-                <h2>مؤشرات أداء المطعم</h2>
-                <div class="subtitle">تحديث مباشر بناءً على قاعدة البيانات الفورية (Firebase).</div>
+                <h2>مؤشرات أداء المطعم (آخر 30 يوماً)</h2>
+                <div class="subtitle">تتبع أداء الطلبات اليومية والمقارنة الزمنية الفورية من قاعدة البيانات.</div>
             </div>
-            <div class="badge-number">⚡</div>
+            <div class="badge-number">30</div>
         </div>
 
         <div class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-title">إجمالي الطلبات المسجلة</div>
+                <div class="metric-title">إجمالي طلبات الفترة</div>
                 <div class="metric-value" id="totalOrdersVal">0</div>
-                <div class="metric-trend">نشط في النظام</div>
+                <div class="metric-trend">مسجل في النظام</div>
             </div>
             <div class="metric-card">
-                <div class="metric-title">الطلبات الجاهزة للاستلام</div>
+                <div class="metric-title">الطلبات الجاهزة</div>
                 <div class="metric-value" id="readyOrdersVal" style="color: var(--success);">0</div>
                 <div class="metric-trend">تم إنجازها</div>
             </div>
@@ -169,8 +168,8 @@
         </div>
 
         <div class="chart-card">
-            <div class="chart-title">حالة الطلبات الحالية في النظام</div>
-            <canvas id="ordersChart" height="100"></canvas>
+            <div class="chart-title">حركة الطلبات اليومية — آخر 30 يوماً</div>
+            <canvas id="thirtyDaysChart" height="120"></canvas>
         </div>
     </div>
 
@@ -190,15 +189,30 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        const ctx = document.getElementById('ordersChart').getContext('2d');
-        const ordersChart = new Chart(ctx, {
+        // توليد تواريخ آخر 30 يوماً وتسميتها
+        function getLast30Days() {
+            const dates = [];
+            for (let i = 29; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const formatted = d.toISOString().split('T')[0]; // صيغة YYYY-MM-DD
+                dates.push({ key: formatted, label: d.toLocaleDateString('ar-JO', { month: 'short', day: 'numeric' }) });
+            }
+            return dates;
+        }
+
+        const daysList = getLast30Days();
+        const ctx = document.getElementById('thirtyDaysChart').getContext('2d');
+        
+        const thirtyDaysChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['قيد التحضير', 'جاهز للاستلام'],
+                labels: daysList.map(d => d.label),
                 datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ['#d97706', '#10b981'],
-                    borderRadius: 8
+                    label: 'عدد الطلبات',
+                    data: new Array(30).fill(0),
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 6
                 }]
             },
             options: {
@@ -207,29 +221,35 @@
                 scales: {
                     y: { 
                         beginAtZero: true,
-                        ticks: { color: '#94a3b8' },
+                        ticks: { color: '#94a3b8', precision: 0 },
                         grid: { color: '#334155' }
                     },
                     x: {
-                        ticks: { color: '#94a3b8' },
+                        ticks: { color: '#94a3b8', maxTicksLimit: 10 },
                         grid: { display: false }
                     }
                 }
             }
         });
 
-        // الاستماع الفوري للبيانات من قاعدة البيانات وتحديث الإحصائيات تلقائياً
         onSnapshot(collection(db, "orders"), (snapshot) => {
             let total = snapshot.size;
             let readyCount = 0;
-            let cookingCount = 0;
+            let dailyCounts = {};
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
+            daysList.forEach(d => dailyCounts[d.key] = 0);
+
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
                 if (data.status === "ready") {
                     readyCount++;
-                } else {
-                    cookingCount++;
+                }
+
+                if (data.createdAt && data.createdAt.toDate) {
+                    const orderDate = data.createdAt.toDate().toISOString().split('T')[0];
+                    if (dailyCounts.hasOwnProperty(orderDate)) {
+                        dailyCounts[orderDate]++;
+                    }
                 }
             });
 
@@ -239,9 +259,9 @@
             let rate = total > 0 ? Math.round((readyCount / total) * 100) : 0;
             document.getElementById('completionRateVal').innerText = rate + "%";
 
-            // تحديث الرسم البياني أوتوماتيكياً
-            ordersChart.data.datasets[0].data = [cookingCount, readyCount];
-            ordersChart.update();
+            const chartDataValues = daysList.map(d => dailyCounts[d.key]);
+            thirtyDaysChart.data.datasets[0].data = chartDataValues;
+            thirtyDaysChart.update();
         });
     </script>
 </body>
