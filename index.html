@@ -7,15 +7,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            --glass-bg: rgba(255, 255, 255, 0.07);
-            --glass-card: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.12);
+            --bg-gradient: linear-gradient(135deg, #090616, #1b133a, #0f0c29);
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-card: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
             --purple-primary: #8b5cf6;
             --purple-hover: #7c3aed;
             --success: #10b981;
             --text-main: #ffffff;
-            --text-muted: rgba(255, 255, 255, 0.6);
+            --text-muted: rgba(255, 255, 255, 0.5);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -27,40 +27,50 @@
             min-height: 100vh;
         }
         .container {
-            max-width: 850px;
+            max-width: 900px;
             margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        /* شريط علوي بنظام الزجاج (Glass Navbar) */
+        /* الشريط العلوي المطابق للصورة تماماً */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: var(--glass-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             padding: 18px 25px;
-            border-radius: 24px;
+            border-radius: 20px;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
-        .brand-logo {
-            font-size: 20px;
-            font-weight: 700;
+        .brand-section {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .brand-title {
+            font-size: 18px;
+            font-weight: 800;
             color: #ffffff;
-            letter-spacing: 0.5px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .brand-logo span {
+        .brand-title span {
             background: linear-gradient(135deg, #c4b5fd, #8b5cf6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        
         .nav-actions {
             display: flex;
             gap: 12px;
@@ -68,55 +78,66 @@
         }
         .branch-select {
             padding: 10px 16px;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
-            border-radius: 14px;
+            border-radius: 12px;
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
             cursor: pointer;
-            backdrop-filter: blur(10px);
         }
         .branch-select option {
             background: #1e1b4b;
             color: white;
         }
         .analytics-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid var(--glass-border);
+            background: rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+            border: 1px solid rgba(139, 92, 246, 0.3);
             padding: 10px 18px;
-            border-radius: 14px;
-            font-size: 14px;
+            border-radius: 12px;
+            font-size: 13px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .analytics-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-1px);
-        }
+        .analytics-btn:hover { background: rgba(139, 92, 246, 0.35); }
 
-        /* كروت الزجاج (Glass Cards) */
+        /* الكروت الزجاجية الرئيسية */
         .card {
             background: var(--glass-card);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 25px;
-            border-radius: 24px;
+            border-radius: 20px;
             border: 1px solid var(--glass-border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
         }
-        h3 { 
-            color: #ffffff; 
-            margin-top: 0; 
-            font-size: 17px; 
-            font-weight: 600;
-            letter-spacing: 0.3px;
+        
+        .section-tag {
+            font-size: 11px;
+            color: var(--purple-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 5px 0;
+        }
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0 0 20px 0;
+        }
+
         .input-row {
             display: flex;
             gap: 12px;
@@ -124,142 +145,169 @@
         input {
             flex: 1;
             padding: 14px 18px;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            border-radius: 12px;
             color: white;
             font-size: 15px;
             outline: none;
             transition: all 0.3s ease;
         }
-        input::placeholder { color: var(--text-muted); }
-        input:focus { 
-            border-color: var(--purple-primary); 
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-        }
-        .btn {
+        input::placeholder { color: rgba(255, 255, 255, 0.3); }
+        input:focus { border-color: var(--purple-primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+        
+        .btn-add {
             background: linear-gradient(135deg, #8b5cf6, #7c3aed);
             color: white;
             border: none;
-            padding: 14px 24px;
-            border-radius: 16px;
-            font-size: 15px;
-            font-weight: 600;
+            padding: 0 25px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
             transition: all 0.3s ease;
         }
-        .btn:hover { 
-            opacity: 0.9;
-            transform: translateY(-1px);
-            box-shadow: 0 12px 25px rgba(139, 92, 246, 0.6);
-        }
+        .btn-add:hover { opacity: 0.9; transform: translateY(-1px); }
 
-        /* الجدول العصري */
+        /* الجدول وتنسيق الصفوف */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 5px;
         }
         th, td {
             padding: 16px 12px;
             text-align: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
         th { 
             color: var(--text-muted); 
             font-weight: 600; 
-            font-size: 13px; 
-            text-transform: uppercase;
+            font-size: 12px; 
             letter-spacing: 0.5px;
         }
-        .btn-ready {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 8px 16px;
-            font-size: 13px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-ready:hover { background: rgba(16, 185, 129, 0.35); }
         
-        .btn-qr {
-            background: rgba(139, 92, 246, 0.2);
-            color: #c4b5fd;
-            border: 1px solid rgba(139, 92, 246, 0.3);
+        .status-ready {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-cooking {
+            background: rgba(245, 158, 11, 0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .btn-action-ready {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
             padding: 8px 16px;
-            font-size: 13px;
-            border-radius: 12px;
+            font-size: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-action-ready:hover { opacity: 0.9; }
+
+        .btn-action-qr {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            margin-left: 5px;
+            margin-left: 6px;
         }
-        .btn-qr:hover { background: rgba(139, 92, 246, 0.35); }
+        .btn-action-qr:hover { background: rgba(255, 255, 255, 0.12); }
 
-        /* نافذة الـ Modal بنظام الزجاج */
+        /* Modal */
         #qrModal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 12, 41, 0.7);
+            background: rgba(9, 6, 22, 0.8);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             justify-content: center;
             align-items: center;
             z-index: 999;
         }
         .modal-content {
-            background: rgba(30, 27, 75, 0.6);
+            background: rgba(27, 19, 58, 0.8);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            padding: 35px;
-            border-radius: 28px;
+            padding: 30px;
+            border-radius: 24px;
             text-align: center;
             color: white;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            max-width: 320px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+            max-width: 300px;
             width: 100%;
         }
         #qrcodeContainer {
             background: white;
             padding: 15px;
-            border-radius: 20px;
+            border-radius: 16px;
             display: inline-block;
-            margin: 20px 0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- شريط علوي -->
+        <!-- الشريط العلوي المطبّق بحسب الصورة -->
         <div class="top-nav">
-            <div class="brand-logo">⚡ <span>TACK POS</span></div>
             <div class="nav-actions">
+                <a href="analytics.html" class="analytics-btn">
+                    📊 التحليلات
+                </a>
                 <select id="branchSelector" class="branch-select" onchange="changeBranch()">
                     <option value="abdoun">فرع عبدون</option>
                     <option value="jubeiha">فرع الجبيهة</option>
                     <option value="dawood">فرع صويلح</option>
                 </select>
-                <a href="analytics.html" class="analytics-btn">📊 التحليلات</a>
+            </div>
+            
+            <div class="brand-section">
+                <div class="brand-title"><span>TACK POS</span> ⚡</div>
+                <div class="brand-subtitle">نظام الطلبات الذكي</div>
             </div>
         </div>
 
+        <!-- كارد إضافة الطلب -->
         <div class="card">
-            <p style="margin-top: 0; color: var(--text-muted); font-size: 14px;">إصدار وتتبع طلبات الفرع المختار فورياً</p>
+            <div class="section-tag">طلب جديد</div>
+            <div class="section-title">إضافة طلب إلى قائمة الفرع</div>
+            <div class="section-desc">أدخل رقم الطلب ليظهر فوراً ضمن الطلبات النشطة.</div>
+            
             <div class="input-row">
                 <input type="text" id="orderInput" placeholder="أدخل رقم الطلب (مثال: 101)">
-                <button class="btn" onclick="addNewOrder()">إضافة الطلب</button>
+                <button class="btn-add" onclick="addNewOrder()">إضافة الطلب</button>
             </div>
         </div>
 
+        <!-- كارد عرض الطلبات النشطة -->
         <div class="card">
-            <h3 id="currentBranchTitle">📋 الطلبات النشطة - فرع عبدون</h3>
+            <div class="section-tag">متابعة مباشرة</div>
+            <div class="section-title" id="currentBranchTitle">الطلبات النشطة - فرع عبدون</div>
+            
             <table>
                 <thead>
                     <tr>
@@ -274,11 +322,12 @@
         </div>
     </div>
 
+    <!-- نافذة الـ QR -->
     <div id="qrModal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="modalTitle" style="margin-bottom: 5px;">رمز الاستجابة للطلب</h3>
+            <h3 id="modalTitle" style="margin-top:0; font-size:16px;">رمز الاستجابة للطلب</h3>
             <div id="qrcodeContainer"></div>
-            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">اضغط في أي مكان للإغلاق</p>
+            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">اضغط في أي مكان للإغلاق</p>
         </div>
     </div>
 
@@ -309,7 +358,7 @@
                 "jubeiha": "فرع الجبيهة",
                 "dawood": "فرع صويلح"
             };
-            document.getElementById('currentBranchTitle').innerText = `📋 الطلبات النشطة - ${branchNames[currentBranch]}`;
+            document.getElementById('currentBranchTitle').innerText = `الطلبات النشطة - ${branchNames[currentBranch]}`;
             loadOrdersForBranch(currentBranch);
         };
 
@@ -356,8 +405,8 @@
             
             new QRCode(container, {
                 text: customerUrl,
-                width: 160,
-                height: 160
+                width: 150,
+                height: 150
             });
 
             document.getElementById("qrModal").style.display = "flex";
@@ -388,15 +437,15 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="font-weight: 700; font-size: 18px; color: #c4b5fd;">#${data.orderId}</td>
+                        <td style="font-weight: 800; font-size: 16px; color: #fbbf24;">#${data.orderId}</td>
                         <td>
-                            <span style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${isReady ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${isReady ? '#34d399' : '#fbbf24'}; border: 1px solid ${isReady ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'};">
-                                ${isReady ? '✅ جاهز للاستلام' : '⏳ قيد التحضير'}
+                            <span class="${isReady ? 'status-ready' : 'status-cooking'}">
+                                ${isReady ? 'جاهز للاستلام' : 'قيد التحضير'}
                             </span>
                         </td>
                         <td>
-                            <button class="btn-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
-                            ${!isReady ? `<button class="btn-ready" onclick="markReady('${docId}')">إرسال جاهز</button>` : ''}
+                            <button class="btn-action-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
+                            ${!isReady ? `<button class="btn-action-ready" onclick="markReady('${docId}')">إرسال جاهز</button>` : ''}
                         </td>
                     `;
                     tbody.appendChild(tr);
