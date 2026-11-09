@@ -210,6 +210,69 @@ body{display:flex;flex-direction:column}.container{width:100%;flex:1}
             }
         };
 
+        // رسم QR بشكل مخصص: نقاط دائرية + عيون ناعمة + شعار بالنص
+        function drawStyledQR(container, text, size) {
+            const tmp = document.createElement('div');
+            const qr = new QRCode(tmp, { text: text, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.H });
+            const model = qr._oQRCode;
+            if (!model || !model.getModuleCount) { container.appendChild(tmp); return; }
+
+            const n = model.getModuleCount();
+            const dpr = window.devicePixelRatio || 1;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size * dpr;
+            canvas.style.width = canvas.style.height = size + 'px';
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const cell = size / n;
+            const grad = ctx.createLinearGradient(0, 0, size, size);
+            grad.addColorStop(0, '#26105a');
+            grad.addColorStop(1, '#4a24b0');
+
+            const inEye = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
+            let logo = Math.floor(n * 0.2);
+            if (logo % 2 === 0) logo++;
+            const lStart = Math.floor((n - logo) / 2);
+            const inLogo = (r, c) => r >= lStart - 1 && r <= lStart + logo && c >= lStart - 1 && c <= lStart + logo;
+
+            const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); };
+
+            // النقاط
+            ctx.fillStyle = grad;
+            for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                    if (!model.isDark(r, c) || inEye(r, c) || inLogo(r, c)) continue;
+                    ctx.beginPath();
+                    ctx.arc((c + 0.5) * cell, (r + 0.5) * cell, cell * 0.45, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // العيون الثلاث
+            [[0, 0], [0, n - 7], [n - 7, 0]].forEach(([r, c]) => {
+                const x = c * cell, y = r * cell;
+                ctx.fillStyle = grad;  rr(x, y, 7 * cell, 7 * cell, cell * 2.2);
+                ctx.fillStyle = '#fff'; rr(x + cell, y + cell, 5 * cell, 5 * cell, cell * 1.5);
+                ctx.fillStyle = grad;  rr(x + 2 * cell, y + 2 * cell, 3 * cell, 3 * cell, cell * 1);
+            });
+
+            // الشعار بالنص
+            const ls = logo * cell, lx = lStart * cell;
+            ctx.fillStyle = '#fff'; rr(lx - cell * 0.6, lx - cell * 0.6, ls + cell * 1.2, ls + cell * 1.2, cell * 2);
+            ctx.fillStyle = grad;   rr(lx, lx, ls, ls, cell * 1.6);
+            ctx.save();
+            const k = (ls * 0.6) / 24;
+            ctx.translate(lx + ls * 0.2, lx + ls * 0.2);
+            ctx.scale(k, k);
+            ctx.fillStyle = '#fff';
+            ctx.fill(new Path2D('M13.2 2 4.5 13.4h6L9.6 22l9-11.6h-6z'));
+            ctx.restore();
+
+            container.appendChild(canvas);
+        }
+
         window.showQrCode = function(orderId) {
             const container = document.getElementById("qrcodeContainer");
             container.innerHTML = "";
@@ -217,11 +280,7 @@ body{display:flex;flex-direction:column}.container{width:100%;flex:1}
             
             const customerUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + `customer.html?order=${encodeURIComponent(orderId)}&branch=${encodeURIComponent(currentBranch)}`;                
             
-            new QRCode(container, {
-                text: customerUrl,
-                width: 160,
-                height: 160
-            });
+            drawStyledQR(container, customerUrl, 190);
 
             document.getElementById("qrModal").style.display = "flex";
         };
