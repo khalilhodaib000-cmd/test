@@ -3,119 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقييم تجربة الطلب - مطعمنا الكريم</title>
+    <title>تَكْ | تقييم تجربة الطلب</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --primary: #3b82f6;
-            --success: #10b981;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            text-align: right;
-        }
-        .container {
-            width: 100%;
-            max-width: 450px;
-            background: var(--card-bg);
-            padding: 30px 25px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            box-sizing: border-box;
-            text-align: center;
-        }
-        h2 { color: #60a5fa; margin-top: 0; margin-bottom: 5px; }
-        p { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
-        
-        /* نجوم التقييم */
-        .stars-container {
-            font-size: 38px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            direction: ltr;
-            display: inline-block;
-        }
-        .star {
-            color: #475569;
-            transition: color 0.2s, transform 0.2s;
-            display: inline-block;
-            padding: 0 3px;
-        }
-        .star.active {
-            color: #f59e0b;
-            transform: scale(1.1);
-        }
+:root{--ink:#0b0914;--text:#f3f0fa;--muted:rgba(226,220,245,.56);--text-muted:rgba(226,220,245,.56);
+--line:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.15);--surface:rgba(255,255,255,.035);
+--violet:#a78bfa;--violet-deep:#7c4dff;--ok:#6ee7b7;--warn:#f2c46d;--danger:#fda4af;
+--font:"IBM Plex Sans Arabic","Segoe UI",Tahoma,sans-serif}
+*{box-sizing:border-box}
+html{background:var(--ink)}
+body{margin:0;padding:32px 20px;min-height:100vh;font-family:var(--font);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit}
+:focus-visible{outline:2px solid var(--violet);outline-offset:3px}
 
-        /* صندوق التعليق */
-        .form-group {
-            margin-bottom: 20px;
-            text-align: right;
-        }
-        label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        textarea {
-            width: 100%;
-            height: 90px;
-            padding: 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 10px;
-            color: white;
-            font-size: 14px;
-            box-sizing: border-box;
-            outline: none;
-            resize: none;
-            transition: border-color 0.3s;
-        }
-        textarea:focus { border-color: var(--primary); }
+/* الخلفية: وهج بنفسجي ناعم + دائرتان شفافتان في الزوايا */
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:
+ radial-gradient(560px 440px at 8% 13%,rgba(78,36,145,.36),transparent 70%),
+ radial-gradient(680px 540px at 92% 78%,rgba(70,28,132,.32),transparent 70%),
+ linear-gradient(135deg,#0c0a15 0%,#110e1d 50%,#0d0b17 100%)}
+.bg i{position:absolute;border-radius:50%;background:radial-gradient(circle at 40% 40%,rgba(125,85,205,.17),rgba(80,50,150,.09));filter:blur(1.5px)}
+.bg i:nth-child(1){width:270px;height:270px;top:-95px;right:-62px}
+.bg i:nth-child(2){width:185px;height:185px;bottom:-55px;left:-32px}
+.bg::after{content:"";position:absolute;inset:0;background:radial-gradient(700px 520px at 50% 45%,rgba(16,185,129,.26),transparent 70%);opacity:0}
+body.flash-bg .bg::after{animation:flashGlow 1.1s ease-in-out infinite alternate}
+@keyframes flashGlow{to{opacity:1}}
 
-        /* زر الإرسال */
-        .submit-btn {
-            width: 100%;
-            background-color: var(--success);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
-            transition: background 0.3s, transform 0.1s;
-        }
-        .submit-btn:hover { background-color: #059669; }
-        .submit-btn:active { transform: scale(0.98); }
+.card{background:var(--surface);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);
+border-radius:22px;padding:26px;margin-bottom:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 30px 60px -28px rgba(0,0,0,.7)}
+h2,h3{margin:0;font-weight:500}
+h3{font-size:16px;margin-bottom:6px}
 
-        /* رسالة النجاح */
-        #successCard {
-            display: none;
-        }
-        .success-icon {
-            font-size: 50px;
-            color: var(--success);
-            margin-bottom: 15px;
-        }
+.mark{width:30px;height:30px;border-radius:10px;display:inline-grid;place-items:center;flex:none;
+background:linear-gradient(145deg,#9d7dff,#5a2fd6);box-shadow:0 8px 20px -6px rgba(124,77,255,.7),inset 0 1px 0 rgba(255,255,255,.3)}
+.wordmark,.brand-logo{display:inline-flex;align-items:center;gap:10px;font-size:22px;font-weight:600;color:var(--text)}
+.brand-logo em{font-style:normal;font-size:13px;font-weight:400;color:var(--muted);padding-right:12px;border-right:1px solid var(--line-strong)}
+
+.top-nav{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:0 4px 22px;margin-bottom:28px;border-bottom:1px solid var(--line)}
+.nav-actions{display:flex;gap:10px;align-items:center}
+.branch-select,.analytics-btn,.back-btn{height:42px;padding:0 16px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);
+border-radius:12px;color:var(--text);font-size:14px;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;cursor:pointer;transition:background .2s,border-color .2s}
+.branch-select:hover,.analytics-btn:hover,.back-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.24)}
+.branch-select option{background:#17132a;color:#fff}
+
+input,textarea{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:14px;color:var(--text);font-size:15px;padding:14px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
+input::placeholder,textarea::placeholder{color:rgba(226,220,245,.35)}
+input:focus,textarea:focus{border-color:rgba(167,139,250,.7);box-shadow:0 0 0 4px rgba(124,77,255,.16)}
+.btn,.submit-btn,.submit-feedback-btn,.enable-btn{border:0;color:#fff;font-weight:600;cursor:pointer;border-radius:14px;
+background:linear-gradient(135deg,#8b5cf6,#6a3df0);box-shadow:0 10px 24px -10px rgba(124,77,255,.9),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .15s,filter .2s}
+.btn:hover,.submit-btn:hover,.submit-feedback-btn:hover,.enable-btn:hover{filter:brightness(1.1)}
+.btn:active,.submit-btn:active,.submit-feedback-btn:active,.enable-btn:active{transform:scale(.98)}
+.btn{padding:0 26px;font-size:15px;white-space:nowrap}
+
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{padding:17px 12px;text-align:start;border-bottom:1px solid rgba(255,255,255,.05)}
+tbody tr:last-child td{border-bottom:0}
+th{color:var(--muted);font-weight:400;font-size:13px}
+td:last-child,th:last-child{text-align:end}
+.oid{font-weight:600;font-size:18px;color:#d6c9ff;font-variant-numeric:tabular-nums}
+
+.stars-container{direction:ltr;display:inline-flex;gap:6px;font-size:34px;cursor:pointer;margin:10px 0 14px}
+.star{color:rgba(255,255,255,.14);transition:color .2s,text-shadow .2s;line-height:1}
+.star:hover{color:rgba(242,196,109,.55)}
+.star.active{color:var(--warn);text-shadow:0 0 20px rgba(242,196,109,.4)}
+.stars{color:var(--warn);letter-spacing:2px}.stars b{color:rgba(255,255,255,.14);font-weight:400}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+body{display:flex;justify-content:center;align-items:center;padding:24px 20px;text-align:right}
+.container{width:100%;max-width:440px;text-align:center;padding:34px 28px}
+.container p{color:var(--muted);font-size:14px;margin:14px 0 22px}
+.form-group{text-align:right;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--muted);margin-bottom:8px}
+textarea{height:96px;resize:none;font-size:14px}
+.submit-btn{width:100%;padding:14px;font-size:16px}
+#successCard{display:none}
+.success-icon{width:56px;height:56px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;font-size:24px;color:var(--ok);border:1px solid rgba(110,231,183,.5);box-shadow:0 0 30px rgba(110,231,183,.2)}
     </style>
 </head>
 <body>
+    <div class="bg" aria-hidden="true"><i></i><i></i></div>
+
 
     <div class="container" id="mainCard">
-        <h2>🍔 مطعمنا الكريم</h2>
+        <div class="wordmark"><span class="mark"><svg viewBox="0 0 24 24" width="16" height="16" fill="#fff"><path d="M13.2 2 4.5 13.4h6L9.6 22l9-11.6h-6z"/></svg></span>تَكْ</div>
         <p id="orderTitle">نود معرفة رأيك في تجربتك معنا اليوم لتقديم الأفضل دائماً!</p>
         
         <!-- نجوم التقييم التفاعلية -->
@@ -137,8 +109,8 @@
 
     <!-- بطاقة شكر تظهر بعد الإرسال -->
     <div class="container" id="successCard">
-        <div class="success-icon">❤️</div>
-        <h2>شكراً لتقييمك!</h2>
+        <div class="success-icon">✓</div>
+        <h2>شكراً لتقييمك</h2>
         <p>سعدنا جداً بخدمتك، ورأيك يساهم في تحسين جودتنا لنكون دائماً عند حسن ظنك.</p>
     </div>
 
