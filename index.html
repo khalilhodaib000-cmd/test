@@ -3,158 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الكاشير - إدارة الفروع والطلبات</title>
+    <title>تَكْ | لوحة الكاشير الذكية</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
+            --bg-color: #0b0f19;
+            --card-bg: #131d31;
+            --border-color: #1e293b;
             --primary: #3b82f6;
             --primary-hover: #2563eb;
             --success: #10b981;
-            --danger: #ef4444;
+            --warning: #f59e0b;
             --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --text-muted: #64748b;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 30px 20px;
         }
         .container {
-            max-width: 800px;
+            max-width: 850px;
             margin: auto;
         }
+        /* الهيدر العصري */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--card-bg);
-            padding: 15px 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            padding: 20px 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 25px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 15px;
         }
-        .top-nav h2 {
-            margin: 0;
-            font-size: 20px;
+        .brand-logo {
+            font-size: 22px;
+            font-weight: 800;
             color: #60a5fa;
+            letter-spacing: 1px;
         }
         .nav-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
+        }
+        .branch-select {
+            padding: 10px 15px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
         }
         .analytics-btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
-        .analytics-btn:hover { background-color: var(--primary-hover); }
+        .analytics-btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
 
-        /* اختيار الفرع */
-        .branch-select {
-            padding: 8px 12px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .header-card, .orders-card {
+        /* كروت الإدخال والطلبات */
+        .card {
             background: var(--card-bg);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin-bottom: 25px;
         }
-        h3 { color: #60a5fa; margin-top: 0; }
+        h3 { color: #60a5fa; margin-top: 0; font-size: 18px; }
         .input-row {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
         input {
             flex: 1;
-            padding: 12px 15px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
+            padding: 14px 18px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             color: white;
             font-size: 16px;
             outline: none;
+            transition: border-color 0.3s;
         }
+        input:focus { border-color: var(--primary); }
         .btn {
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 14px 24px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
         .btn:hover { background-color: var(--primary-hover); }
+
+        /* الجدول العصري */
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
         }
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: center;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid var(--border-color);
         }
-        th { color: var(--text-muted); }
+        th { color: var(--text-muted); font-weight: 600; font-size: 14px; }
         .btn-ready {
             background-color: var(--success);
-            padding: 8px 12px;
-            font-size: 14px;
+            padding: 8px 14px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
         }
         .btn-ready:hover { background-color: #059669; }
         .btn-qr {
-            background-color: #8b5cf6;
-            padding: 8px 12px;
-            font-size: 14px;
+            background-color: #7c3aed;
+            padding: 8px 14px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
         }
-        .btn-qr:hover { background-color: #7c3aed; }
+        .btn-qr:hover { background-color: #6d28d9; }
+
+        /* المودال */
         #qrModal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
             justify-content: center;
             align-items: center;
+            z-index: 999;
         }
         .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 20px;
             text-align: center;
-            color: black;
+            color: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        #qrcodeContainer {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 15px 0;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- شريط علوي للتحكم، الفروع، والتحليلات -->
+        <!-- شريط علوي -->
         <div class="top-nav">
-            <h2>🍽️ لوحة الكاشير الذكية</h2>
+            <div class="brand-logo">⚡ تَكْ | TACK POS</div>
             <div class="nav-actions">
                 <select id="branchSelector" class="branch-select" onchange="changeBranch()">
                     <option value="abdoun">فرع عبدون</option>
@@ -165,15 +196,15 @@
             </div>
         </div>
 
-        <div class="header-card">
-            <p style="margin-top: 0; color: var(--text-muted);">إصدار وتتبع طلبات الفرع المختار حالياً</p>
+        <div class="card">
+            <p style="margin-top: 0; color: var(--text-muted); font-size: 14px;">إصدار وتتبع طلبات الفرع المختار فورياً</p>
             <div class="input-row">
                 <input type="text" id="orderInput" placeholder="أدخل رقم الطلب (مثال: 101)">
                 <button class="btn" onclick="addNewOrder()">إضافة الطلب</button>
             </div>
         </div>
 
-        <div class="orders-card">
+        <div class="card">
             <h3 id="currentBranchTitle">📋 الطلبات النشطة - فرع عبدون</h3>
             <table>
                 <thead>
@@ -191,9 +222,9 @@
 
     <div id="qrModal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="modalTitle">QR Code للطلب</h3>
+            <h3 id="modalTitle">رمز الاستجابة للطلب</h3>
             <div id="qrcodeContainer"></div>
-            <p style="font-size: 12px; color: #666; margin-top: 10px;">اضغط في أي مكان للإغلاق</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0;">اضغط في أي مكان للإغلاق</p>
         </div>
     </div>
 
@@ -236,7 +267,6 @@
                 return;
             }
 
-            // استخدام معرف فريد للطلب يدمج الفرع ورقم الطلب لضمان عدم تكرار الأرقام بين الفروع
             const docId = `${currentBranch}_${orderId}`;
 
             try {
@@ -266,14 +296,14 @@
         window.showQrCode = function(orderId) {
             const container = document.getElementById("qrcodeContainer");
             container.innerHTML = "";
-            document.getElementById("modalTitle").innerText = `QR Code للطلب #${orderId} (${currentBranch})`;
+            document.getElementById("modalTitle").innerText = `QR الطلب #${orderId}`;
             
             const customerUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + `customer.html?order=${encodeURIComponent(orderId)}&branch=${encodeURIComponent(currentBranch)}`;                
             
             new QRCode(container, {
                 text: customerUrl,
-                width: 180,
-                height: 180
+                width: 170,
+                height: 170
             });
 
             document.getElementById("qrModal").style.display = "flex";
@@ -284,7 +314,7 @@
         };
 
         function loadOrdersForBranch(branch) {
-            if (unsubscribe) unsubscribe(); // إلغاء الاستماع للفرع السابق
+            if (unsubscribe) unsubscribe();
 
             const q = query(collection(db, "orders"), where("branch", "==", branch));
 
@@ -304,9 +334,9 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="font-weight: bold; font-size: 18px;">#${data.orderId}</td>
+                        <td style="font-weight: bold; font-size: 18px; color: #f59e0b;">#${data.orderId}</td>
                         <td>
-                            <span style="padding: 5px 10px; border-radius: 12px; font-size: 13px; background: ${isReady ? '#10b981' : '#d97706'}; color: white;">
+                            <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${isReady ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${isReady ? '#34d399' : '#fbbf24'};">
                                 ${isReady ? '✅ جاهز للاستلام' : '⏳ قيد التحضير'}
                             </span>
                         </td>
@@ -320,7 +350,6 @@
             });
         }
 
-        // تحميل الطلبات للفرع الافتراضي عند فتح الصفحة
         loadOrdersForBranch(currentBranch);
     </script>
 </body>
