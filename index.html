@@ -7,46 +7,59 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: #131d31;
-            --border-color: #1e293b;
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-card: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --purple-primary: #8b5cf6;
+            --purple-hover: #7c3aed;
             --success: #10b981;
-            --warning: #f59e0b;
-            --text-main: #f8fafc;
-            --text-muted: #64748b;
+            --text-main: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-gradient);
+            background-attachment: fixed;
             color: var(--text-main);
             margin: 0;
             padding: 30px 20px;
+            min-height: 100vh;
         }
         .container {
             max-width: 850px;
             margin: auto;
         }
-        /* الهيدر العصري */
+
+        /* شريط علوي بنظام الزجاج (Glass Navbar) */
         .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--card-bg);
-            padding: 20px 25px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 18px 25px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             margin-bottom: 25px;
             flex-wrap: wrap;
             gap: 15px;
         }
         .brand-logo {
-            font-size: 22px;
-            font-weight: 800;
-            color: #60a5fa;
-            letter-spacing: 1px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand-logo span {
+            background: linear-gradient(135deg, #c4b5fd, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         .nav-actions {
             display: flex;
@@ -54,39 +67,56 @@
             align-items: center;
         }
         .branch-select {
-            padding: 10px 15px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            padding: 10px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
             color: white;
             font-size: 14px;
             outline: none;
             cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+        .branch-select option {
+            background: #1e1b4b;
+            color: white;
         }
         .analytics-btn {
-            background-color: var(--primary);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: none;
+            border: 1px solid var(--glass-border);
             padding: 10px 18px;
-            border-radius: 12px;
+            border-radius: 14px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
-        .analytics-btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .analytics-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
 
-        /* كروت الإدخال والطلبات */
+        /* كروت الزجاج (Glass Cards) */
         .card {
-            background: var(--card-bg);
+            background: var(--glass-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             padding: 25px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
             margin-bottom: 25px;
         }
-        h3 { color: #60a5fa; margin-top: 0; font-size: 18px; }
+        h3 { 
+            color: #ffffff; 
+            margin-top: 0; 
+            font-size: 17px; 
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
         .input-row {
             display: flex;
             gap: 12px;
@@ -94,89 +124,113 @@
         input {
             flex: 1;
             padding: 14px 18px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
             color: white;
-            font-size: 16px;
+            font-size: 15px;
             outline: none;
-            transition: border-color 0.3s;
+            transition: all 0.3s ease;
         }
-        input:focus { border-color: var(--primary); }
+        input::placeholder { color: var(--text-muted); }
+        input:focus { 
+            border-color: var(--purple-primary); 
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
         .btn {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
             color: white;
             border: none;
             padding: 14px 24px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: bold;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+            transition: all 0.3s ease;
         }
-        .btn:hover { background-color: var(--primary-hover); }
+        .btn:hover { 
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 12px 25px rgba(139, 92, 246, 0.6);
+        }
 
         /* الجدول العصري */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 10px;
         }
         th, td {
-            padding: 15px;
+            padding: 16px 12px;
             text-align: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
-        th { color: var(--text-muted); font-weight: 600; font-size: 14px; }
+        th { 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            font-size: 13px; 
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
         .btn-ready {
-            background-color: var(--success);
-            padding: 8px 14px;
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 8px 16px;
             font-size: 13px;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        .btn-ready:hover { background-color: #059669; }
+        .btn-ready:hover { background: rgba(16, 185, 129, 0.35); }
+        
         .btn-qr {
-            background-color: #7c3aed;
-            padding: 8px 14px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #c4b5fd;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 8px 16px;
             font-size: 13px;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            font-weight: bold;
+            border-radius: 12px;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 5px;
         }
-        .btn-qr:hover { background-color: #6d28d9; }
+        .btn-qr:hover { background: rgba(139, 92, 246, 0.35); }
 
-        /* المودال */
+        /* نافذة الـ Modal بنظام الزجاج */
         #qrModal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
+            background: rgba(15, 12, 41, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             justify-content: center;
             align-items: center;
             z-index: 999;
         }
         .modal-content {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 30px;
-            border-radius: 20px;
+            background: rgba(30, 27, 75, 0.6);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            padding: 35px;
+            border-radius: 28px;
             text-align: center;
             color: white;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            max-width: 320px;
+            width: 100%;
         }
         #qrcodeContainer {
             background: white;
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 20px;
             display: inline-block;
-            margin: 15px 0;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
     </style>
 </head>
@@ -185,7 +239,7 @@
     <div class="container">
         <!-- شريط علوي -->
         <div class="top-nav">
-            <div class="brand-logo">⚡ تَكْ | TACK POS</div>
+            <div class="brand-logo">⚡ <span>TACK POS</span></div>
             <div class="nav-actions">
                 <select id="branchSelector" class="branch-select" onchange="changeBranch()">
                     <option value="abdoun">فرع عبدون</option>
@@ -222,7 +276,7 @@
 
     <div id="qrModal" onclick="closeModal()">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 id="modalTitle">رمز الاستجابة للطلب</h3>
+            <h3 id="modalTitle" style="margin-bottom: 5px;">رمز الاستجابة للطلب</h3>
             <div id="qrcodeContainer"></div>
             <p style="font-size: 12px; color: var(--text-muted); margin: 0;">اضغط في أي مكان للإغلاق</p>
         </div>
@@ -302,8 +356,8 @@
             
             new QRCode(container, {
                 text: customerUrl,
-                width: 170,
-                height: 170
+                width: 160,
+                height: 160
             });
 
             document.getElementById("qrModal").style.display = "flex";
@@ -334,15 +388,15 @@
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td style="font-weight: bold; font-size: 18px; color: #f59e0b;">#${data.orderId}</td>
+                        <td style="font-weight: 700; font-size: 18px; color: #c4b5fd;">#${data.orderId}</td>
                         <td>
-                            <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${isReady ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${isReady ? '#34d399' : '#fbbf24'};">
+                            <span style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${isReady ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)'}; color: ${isReady ? '#34d399' : '#fbbf24'}; border: 1px solid ${isReady ? 'rgba(16, 185, 129, 0.3)' : 'rgba(245, 158, 11, 0.3)'};">
                                 ${isReady ? '✅ جاهز للاستلام' : '⏳ قيد التحضير'}
                             </span>
                         </td>
                         <td>
-                            <button class="btn btn-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
-                            ${!isReady ? `<button class="btn btn-ready" onclick="markReady('${docId}')">إرسال جاهز</button>` : ''}
+                            <button class="btn-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
+                            ${!isReady ? `<button class="btn-ready" onclick="markReady('${docId}')">إرسال جاهز</button>` : ''}
                         </td>
                     `;
                     tbody.appendChild(tr);
