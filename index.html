@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة الكاشير - إدارة عدة طلبات</title>
+    <title>لوحة الكاشير - إدارة الفروع والطلبات</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -36,14 +36,21 @@
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .top-nav h2 {
             margin: 0;
             font-size: 20px;
             color: #60a5fa;
         }
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
         .analytics-btn {
-            background-color: #3b82f6;
+            background-color: var(--primary);
             color: white;
             border: none;
             padding: 8px 15px;
@@ -54,7 +61,19 @@
             text-decoration: none;
             transition: background 0.3s;
         }
-        .analytics-btn:hover { background-color: #2563eb; }
+        .analytics-btn:hover { background-color: var(--primary-hover); }
+
+        /* اختيار الفرع */
+        .branch-select {
+            padding: 8px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
 
         .header-card, .orders-card {
             background: var(--card-bg);
@@ -133,22 +152,29 @@
 <body>
 
     <div class="container">
-        <!-- شريط علوي للتحكم والتحليلات -->
+        <!-- شريط علوي للتحكم، الفروع، والتحليلات -->
         <div class="top-nav">
             <h2>🍽️ لوحة الكاشير الذكية</h2>
-            <a href="analytics.html" class="analytics-btn">📊 عرض التحليلات والإحصائيات</a>
+            <div class="nav-actions">
+                <select id="branchSelector" class="branch-select" onchange="changeBranch()">
+                    <option value="abdoun">فرع عبدون</option>
+                    <option value="jubeiha">فرع الجبيهة</option>
+                    <option value="dawood">فرع صويلح</option>
+                </select>
+                <a href="analytics.html" class="analytics-btn">📊 التحليلات</a>
+            </div>
         </div>
 
         <div class="header-card">
-            <p style="margin-top: 0; color: var(--text-muted);">إصدار وتتبع طلبات الزبائن المتعددة</p>
+            <p style="margin-top: 0; color: var(--text-muted);">إصدار وتتبع طلبات الفرع المختار حالياً</p>
             <div class="input-row">
-                <input type="text" id="orderInput" placeholder="أدخل رقم الطلب يدوياً (مثال: 54)">
+                <input type="text" id="orderInput" placeholder="أدخل رقم الطلب (مثال: 101)">
                 <button class="btn" onclick="addNewOrder()">إضافة الطلب</button>
             </div>
         </div>
 
         <div class="orders-card">
-            <h3>📋 الطلبات النشطة حالياً</h3>
+            <h3 id="currentBranchTitle">📋 الطلبات النشطة - فرع عبدون</h3>
             <table>
                 <thead>
                     <tr>
@@ -173,7 +199,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, updateDoc, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7IuqZfeJiBBD2KlH0Y1YFGRKQVE7Xrx4",
@@ -187,6 +213,21 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        let currentBranch = "abdoun";
+        let unsubscribe = null;
+
+        window.changeBranch = function() {
+            const selector = document.getElementById('branchSelector');
+            currentBranch = selector.value;
+            const branchNames = {
+                "abdoun": "فرع عبدون",
+                "jubeiha": "فرع الجبيهة",
+                "dawood": "فرع صويلح"
+            };
+            document.getElementById('currentBranchTitle').innerText = `📋 الطلبات النشطة - ${branchNames[currentBranch]}`;
+            loadOrdersForBranch(currentBranch);
+        };
+
         window.addNewOrder = async function() {
             const orderInput = document.getElementById('orderInput');
             const orderId = orderInput.value.trim();
@@ -195,9 +236,13 @@
                 return;
             }
 
+            // استخدام معرف فريد للطلب يدمج الفرع ورقم الطلب لضمان عدم تكرار الأرقام بين الفروع
+            const docId = `${currentBranch}_${orderId}`;
+
             try {
-                await setDoc(doc(db, "orders", orderId), {
+                await setDoc(doc(db, "orders", docId), {
                     orderId: orderId,
+                    branch: currentBranch,
                     status: "cooking",
                     createdAt: new Date()
                 });
@@ -208,9 +253,9 @@
             }
         };
 
-        window.markReady = async function(orderId) {
+        window.markReady = async function(docId) {
             try {
-                await updateDoc(doc(db, "orders", orderId), {
+                await updateDoc(doc(db, "orders", docId), {
                     status: "ready"
                 });
             } catch (e) {
@@ -221,9 +266,9 @@
         window.showQrCode = function(orderId) {
             const container = document.getElementById("qrcodeContainer");
             container.innerHTML = "";
-            document.getElementById("modalTitle").innerText = "QR Code للطلب #" + orderId;
+            document.getElementById("modalTitle").innerText = `QR Code للطلب #${orderId} (${currentBranch})`;
             
-            const customerUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + 'customer.html?order=' + encodeURIComponent(orderId);                
+            const customerUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1) + `customer.html?order=${encodeURIComponent(orderId)}&branch=${encodeURIComponent(currentBranch)}`;                
             
             new QRCode(container, {
                 text: customerUrl,
@@ -238,30 +283,45 @@
             document.getElementById("qrModal").style.display = "none";
         };
 
-        onSnapshot(collection(db, "orders"), (snapshot) => {
-            const tbody = document.getElementById('ordersTableBody');
-            tbody.innerHTML = "";
+        function loadOrdersForBranch(branch) {
+            if (unsubscribe) unsubscribe(); // إلغاء الاستماع للفرع السابق
 
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                const isReady = data.status === "ready";
+            const q = query(collection(db, "orders"), where("branch", "==", branch));
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: bold; font-size: 18px;">#${data.orderId}</td>
-                    <td>
-                        <span style="padding: 5px 10px; border-radius: 12px; font-size: 13px; background: ${isReady ? '#10b981' : '#d97706'}; color: white;">
-                            ${isReady ? '✅ جاهز للاستلام' : '⏳ قيد التحضير'}
-                        </span>
-                    </td>
-                    <td>
-                        <button class="btn btn-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
-                        ${!isReady ? `<button class="btn btn-ready" onclick="markReady('${data.orderId}')">إرسال جاهز</button>` : ''}
-                    </td>
-                `;
-                tbody.appendChild(tr);
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('ordersTableBody');
+                tbody.innerHTML = "";
+
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">لا توجد طلبات نشطة في هذا الفرع حالياً.</td></tr>`;
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const docId = docSnap.id;
+                    const isReady = data.status === "ready";
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: bold; font-size: 18px;">#${data.orderId}</td>
+                        <td>
+                            <span style="padding: 5px 10px; border-radius: 12px; font-size: 13px; background: ${isReady ? '#10b981' : '#d97706'}; color: white;">
+                                ${isReady ? '✅ جاهز للاستلام' : '⏳ قيد التحضير'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-qr" onclick="showQrCode('${data.orderId}')">عرض QR</button>
+                            ${!isReady ? `<button class="btn btn-ready" onclick="markReady('${docId}')">إرسال جاهز</button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             });
-        });
+        }
+
+        // تحميل الطلبات للفرع الافتراضي عند فتح الصفحة
+        loadOrdersForBranch(currentBranch);
     </script>
 </body>
 </html>
