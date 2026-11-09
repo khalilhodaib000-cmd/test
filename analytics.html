@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحليلات والإحصائيات - Pager App</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>تحليلات وتقييمات المطعم</title>
     <style>
         :root {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
             --primary: #3b82f6;
-            --success: #10b981;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --border-color: #334155;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,154 +19,79 @@
             margin: 0;
             padding: 20px;
         }
-        .container {
-            max-width: 950px;
-            margin: auto;
-        }
-        .app-header {
+        .container { max-width: 800px; margin: auto; }
+        .top-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 25px;
             background: var(--card-bg);
             padding: 15px 20px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-        }
-        .app-header h1 {
-            font-size: 20px;
-            color: #60a5fa;
-            margin: 0;
-        }
-        .back-btn {
-            background-color: #334155;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.3s;
-        }
-        .back-btn:hover { background-color: #475569; }
-        
-        .title-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .title-card h2 {
-            margin: 0;
-            font-size: 22px;
-            color: #60a5fa;
-        }
-        .badge-number {
-            background-color: var(--primary);
-            color: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-        }
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
             margin-bottom: 20px;
         }
-        .metric-card {
+        .card {
             background: var(--card-bg);
             padding: 20px;
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
             text-align: center;
         }
-        .metric-title {
-            color: var(--text-muted);
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-        .metric-value {
-            font-size: 28px;
+        .stats-number {
+            font-size: 36px;
             font-weight: bold;
-            color: var(--text-main);
+            color: #f59e0b;
+            margin: 10px 0;
         }
-        .metric-trend {
-            font-size: 12px;
-            margin-top: 5px;
-            color: var(--success);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            text-align: right;
         }
-        .chart-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #334155;
         }
-        .chart-title {
-            font-size: 16px;
+        th { color: var(--text-muted); text-align: right; }
+        .back-btn {
+            background-color: #3b82f6;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 8px;
             font-weight: bold;
-            margin-bottom: 15px;
-            color: #60a5fa;
-        }
-        @media(max-width: 768px) {
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="app-header">
-            <h1>📊 Pager App - التحليلات الحية</h1>
-            <a href="index.html" class="back-btn">← عودة للوحة الكاشير</a>
+        <div class="top-nav">
+            <h2>📊 تحليلات وتقييمات الزبائن</h2>
+            <a href="index.html" class="back-btn">⬅ العودة لوحة الكاشير</a>
         </div>
 
-        <div class="title-card">
-            <div>
-                <h2>مؤشرات أداء المطعم (آخر 30 يوماً)</h2>
-                <div class="subtitle">تتبع أداء الطلبات اليومية والمقارنة الزمنية الفورية من قاعدة البيانات.</div>
-            </div>
-            <div class="badge-number">30</div>
+        <div class="card">
+            <p style="color: var(--text-muted); margin: 0;">متوسط تقييم العملاء العام</p>
+            <div class="stats-number" id="avgRating">0.0 ⭐</div>
+            <p style="font-size: 13px; color: var(--text-muted);" id="totalReviews">إجمالي التقييمات: 0</p>
         </div>
 
-        <div class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-title">إجمالي طلبات الفترة</div>
-                <div class="metric-value" id="totalOrdersVal">0</div>
-                <div class="metric-trend">مسجل في النظام</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-title">الطلبات الجاهزة</div>
-                <div class="metric-value" id="readyOrdersVal" style="color: var(--success);">0</div>
-                <div class="metric-trend">تم إنجازها</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-title">نسبة إنجاز الطلبات</div>
-                <div class="metric-value" id="completionRateVal">0%</div>
-            </div>
-        </div>
-
-        <div class="chart-card">
-            <div class="chart-title">حركة الطلبات اليومية — آخر 30 يوماً</div>
-            <canvas id="thirtyDaysChart" height="120"></canvas>
+        <div class="card" style="text-align: right;">
+            <h3 style="color: #60a5fa; margin-top: 0;">💬 أحدث تعليقات وتقييمات الزبائن</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الطلب</th>
+                        <th>التقييم</th>
+                        <th>التعليق</th>
+                    </tr>
+                </thead>
+                <tbody id="feedbackTableBody">
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">جاري تحميل البيانات...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -189,79 +111,37 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // توليد تواريخ آخر 30 يوماً وتسميتها
-        function getLast30Days() {
-            const dates = [];
-            for (let i = 29; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const formatted = d.toISOString().split('T')[0]; // صيغة YYYY-MM-DD
-                dates.push({ key: formatted, label: d.toLocaleDateString('ar-JO', { month: 'short', day: 'numeric' }) });
+        onSnapshot(collection(db, "feedback"), (snapshot) => {
+            const tbody = document.getElementById('feedbackTableBody');
+            tbody.innerHTML = "";
+
+            let totalScore = 0;
+            let count = snapshot.size;
+
+            if (count === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">لا توجد تقييمات حتى الآن.</td></tr>`;
+                document.getElementById('avgRating').innerText = "0.0 ⭐";
+                document.getElementById('totalReviews').innerText = "إجمالي التقييمات: 0";
+                return;
             }
-            return dates;
-        }
-
-        const daysList = getLast30Days();
-        const ctx = document.getElementById('thirtyDaysChart').getContext('2d');
-        
-        const thirtyDaysChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: daysList.map(d => d.label),
-                datasets: [{
-                    label: 'عدد الطلبات',
-                    data: new Array(30).fill(0),
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        ticks: { color: '#94a3b8', precision: 0 },
-                        grid: { color: '#334155' }
-                    },
-                    x: {
-                        ticks: { color: '#94a3b8', maxTicksLimit: 10 },
-                        grid: { display: false }
-                    }
-                }
-            }
-        });
-
-        onSnapshot(collection(db, "orders"), (snapshot) => {
-            let total = snapshot.size;
-            let readyCount = 0;
-            let dailyCounts = {};
-
-            daysList.forEach(d => dailyCounts[d.key] = 0);
 
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                if (data.status === "ready") {
-                    readyCount++;
-                }
+                totalScore += Number(data.rating || 0);
 
-                if (data.createdAt && data.createdAt.toDate) {
-                    const orderDate = data.createdAt.toDate().toISOString().split('T')[0];
-                    if (dailyCounts.hasOwnProperty(orderDate)) {
-                        dailyCounts[orderDate]++;
-                    }
-                }
+                const starsStr = "⭐".repeat(data.rating);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight: bold;">#${data.orderId}</td>
+                    <td>${starsStr} (${data.rating}/5)</td>
+                    <td style="color: var(--text-muted);">${data.comment}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            document.getElementById('totalOrdersVal').innerText = total;
-            document.getElementById('readyOrdersVal').innerText = readyCount;
-            
-            let rate = total > 0 ? Math.round((readyCount / total) * 100) : 0;
-            document.getElementById('completionRateVal').innerText = rate + "%";
-
-            const chartDataValues = daysList.map(d => dailyCounts[d.key]);
-            thirtyDaysChart.data.datasets[0].data = chartDataValues;
-            thirtyDaysChart.update();
+            const avg = (totalScore / count).toFixed(1);
+            document.getElementById('avgRating').innerText = avg + " ⭐";
+            document.getElementById('totalReviews').innerText = `إجمالي التقييمات: ${count} تقييم`;
         });
     </script>
 </body>

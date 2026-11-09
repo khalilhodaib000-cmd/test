@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقييم تجربة الطلب - مطعمنا الكريم</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --success: #10b981;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: right;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            padding: 30px 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
+            text-align: center;
+        }
+        h2 { color: #60a5fa; margin-top: 0; margin-bottom: 5px; }
+        p { color: var(--text-muted); font-size: 14px; margin-bottom: 25px; }
+        
+        /* نجوم التقييم */
+        .stars-container {
+            font-size: 38px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            direction: ltr;
+            display: inline-block;
+        }
+        .star {
+            color: #475569;
+            transition: color 0.2s, transform 0.2s;
+            display: inline-block;
+            padding: 0 3px;
+        }
+        .star.active {
+            color: #f59e0b;
+            transform: scale(1.1);
+        }
+
+        /* صندوق التعليق */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 90px;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            resize: none;
+            transition: border-color 0.3s;
+        }
+        textarea:focus { border-color: var(--primary); }
+
+        /* زر الإرسال */
+        .submit-btn {
+            width: 100%;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: background 0.3s, transform 0.1s;
+        }
+        .submit-btn:hover { background-color: #059669; }
+        .submit-btn:active { transform: scale(0.98); }
+
+        /* رسالة النجاح */
+        #successCard {
+            display: none;
+        }
+        .success-icon {
+            font-size: 50px;
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="mainCard">
+        <h2>🍔 مطعمنا الكريم</h2>
+        <p id="orderTitle">نود معرفة رأيك في تجربتك معنا اليوم لتقديم الأفضل دائماً!</p>
+        
+        <!-- نجوم التقييم التفاعلية -->
+        <div class="stars-container" id="starsContainer">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+        </div>
+
+        <div class="form-group">
+            <label>ملاحظات أو اقتراحات إضافية (اختياري)</label>
+            <textarea id="feedbackComment" placeholder="كيف كانت جودة الطعام والخدمة؟"></textarea>
+        </div>
+
+        <button class="submit-btn" onclick="submitFeedback()">إرسال التقييم</button>
+    </div>
+
+    <!-- بطاقة شكر تظهر بعد الإرسال -->
+    <div class="container" id="successCard">
+        <div class="success-icon">❤️</div>
+        <h2>شكراً لتقييمك!</h2>
+        <p>سعدنا جداً بخدمتك، ورأيك يساهم في تحسين جودتنا لنكون دائماً عند حسن ظنك.</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, collection } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC7IuqZfeJiBBD2KlH0Y1YFGRKQVE7Xrx4",
+            authDomain: "test-f4f89.firebaseapp.com",
+            projectId: "test-f4f89",
+            storageBucket: "test-f4f89.firebasestorage.app",
+            messagingSenderId: "933874949137",
+            appId: "1:933874949137:web:0516c64d7496ab45fda5b0"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // جلب رقم الطلب من رابط الصفحة إن وجد (مثل: feedback.html?order=54)
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order');
+
+        if (orderId) {
+            document.getElementById('orderTitle').innerText = `تقييم الطلب رقم #${orderId} - نود معرفة رأيك!`;
+        }
+
+        let selectedRating = 0;
+        const stars = document.querySelectorAll('.star');
+
+        // تفاعل النجوم (تلوين النجوم حسب الاختيار)
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                selectedRating = index + 1;
+                stars.forEach((s, i) => {
+                    if (i < selectedRating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // دالة حفظ التقييم في فايربيس
+        window.submitFeedback = async function() {
+            if (selectedRating === 0) {
+                alert('الرجاء اختيار التقييم بالنجوم أولاً قبل الإرسال!');
+                return;
+            }
+
+            const comment = document.getElementById('feedbackComment').value.trim();
+
+            try {
+                await setDoc(doc(collection(db, "feedback")), {
+                    orderId: orderId || "بدون رقم طلب",
+                    rating: selectedRating,
+                    comment: comment || "بدون تعليق",
+                    createdAt: new Date()
+                });
+
+                // إخفاء بطاقة الإدخال وإظهار شكر النجاح
+                document.getElementById('mainCard').style.display = 'none';
+                document.getElementById('successCard').style.display = 'block';
+
+            } catch (e) {
+                console.error("Error saving feedback: ", e);
+                alert("حدث خطأ أثناء إرسال التقييم، يرجى المحاولة مرة أخرى.");
+            }
+        };
+    </script>
+</body>
+</html>

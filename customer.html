@@ -10,6 +10,8 @@
             --card-bg: #1e293b;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --success: #10b981;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -62,7 +64,7 @@
             padding: 20px;
         }
         .enable-btn {
-            background-color: #10b981;
+            background-color: var(--success);
             color: white;
             border: none;
             padding: 15px 30px;
@@ -74,44 +76,50 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
         }
 
-        /* تنسيقات صندوق جمع البيانات المدمج أسفل الصفحة */
-        .promo-box {
+        /* صندوق التقييم الفوري */
+        .feedback-box {
+            display: none;
             background: var(--card-bg);
             padding: 20px;
             border-radius: 20px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
             box-sizing: border-box;
-        }
-        .promo-box h3 {
-            color: #60a5fa;
-            font-size: 16px;
-            margin-top: 0;
-            margin-bottom: 8px;
             text-align: center;
         }
-        .form-group {
-            margin-bottom: 10px;
+        .stars-container {
+            font-size: 32px;
+            cursor: pointer;
+            margin: 10px 0;
+            direction: ltr;
+            display: inline-block;
         }
-        .form-group label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
+        .star {
+            color: #475569;
+            transition: color 0.2s, transform 0.2s;
+            display: inline-block;
+            padding: 0 2px;
         }
-        .form-group input {
+        .star.active {
+            color: #f59e0b;
+            transform: scale(1.1);
+        }
+        .feedback-textarea {
             width: 100%;
+            height: 75px;
             padding: 10px;
             background: #0f172a;
             border: 1px solid #334155;
             border-radius: 8px;
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             box-sizing: border-box;
             outline: none;
+            resize: none;
+            margin-bottom: 12px;
         }
-        .save-btn {
+        .submit-feedback-btn {
             width: 100%;
-            background-color: #3b82f6;
+            background-color: var(--success);
             color: white;
             border: none;
             padding: 10px;
@@ -119,17 +127,9 @@
             font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 5px;
             transition: background 0.3s;
         }
-        .save-btn:hover { background-color: #2563eb; }
-        #saveMsg {
-            text-align: center;
-            font-size: 12px;
-            color: #10b981;
-            margin-top: 8px;
-            display: none;
-        }
+        .submit-feedback-btn:hover { background-color: #059669; }
 
         /* تنسيقات الـ Stepper */
         .stepper-box {
@@ -168,8 +168,8 @@
             z-index: 2;
             font-weight: bold;
         }
-        .stepper-completed .stepper-circle { background-color: #10b981; color: white; }
-        .stepper-completed .stepper-title { color: #10b981; }
+        .stepper-completed .stepper-circle { background-color: var(--success); color: white; }
+        .stepper-completed .stepper-title { color: var(--success); }
         .stepper-completed .stepper-status { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
         .stepper-active .stepper-circle {
             background-color: #f59e0b;
@@ -192,7 +192,7 @@
         }
         .ready-alert-banner {
             display: none;
-            background: #10b981;
+            background: var(--success);
             color: white;
             padding: 12px;
             border-radius: 12px;
@@ -277,23 +277,21 @@
             <button id="stopAlarmBtn" class="stop-alarm-btn" onclick="stopAlarm()">🔕 إيقاف التنبيه الصوتي</button>
         </div>
 
-        <!-- صندوق جمع بيانات الزبون الاختياري (مدمج أسفل الصفحة في المكان المحدد) -->
-        <div class="promo-box">
-            <h3>🎁 انضم لعائلة المطعم</h3>
-            <p style="color: var(--text-muted); font-size: 12px; text-align: center; margin-bottom: 10px;">احصل على آخر العروض والخصومات (اختياري):</p>
+        <!-- صندوق التقييم الفوري (يظهر تلقائياً عند جاهزية الطلب) -->
+        <div class="feedback-box" id="feedbackBox">
+            <h3 style="color: #60a5fa; font-size: 16px; margin-top: 0; margin-bottom: 5px;">كيف كانت تجربتك اليوم؟ ⭐</h3>
+            <p style="color: var(--text-muted); font-size: 12px; margin-bottom: 10px;">قيم خدمتنا لنستمر في تحسين الأداء</p>
             
-            <div class="form-group">
-                <label>الاسم</label>
-                <input type="text" id="clientName" placeholder="أدخل اسمك الكريم">
-            </div>
-            
-            <div class="form-group">
-                <label>رقم الهاتف أو البريد الإلكتروني</label>
-                <input type="text" id="clientContact" placeholder="07XXXXXXXX">
+            <div class="stars-container" id="starsContainer">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
             </div>
 
-            <button class="save-btn" onclick="saveCustomerData()">حفظ ومتابعة العروض</button>
-            <div id="saveMsg">✓ تم حفظ بياناتك بنجاح، شكراً لك!</div>
+            <textarea class="feedback-textarea" id="feedbackComment" placeholder="أضف ملاحظاتك أو اقتراحاتك هنا (اختياري)..."></textarea>
+            <button class="submit-feedback-btn" onclick="submitFeedback()">إرسال التقييم</button>
         </div>
     </div>
 
@@ -322,11 +320,55 @@
         const step3 = document.getElementById('step3');
         const readyBanner = document.getElementById('readyBanner');
         const stopAlarmBtn = document.getElementById('stopAlarmBtn');
+        const feedbackBox = document.getElementById('feedbackBox');
 
         const alertAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         alertAudio.loop = true; 
 
         let alarmManuallyStopped = false;
+        let selectedRating = 0;
+
+        // نظام تفاعل النجوم
+        const stars = document.querySelectorAll('.star');
+        stars.forEach((star, index) => {
+            star.addEventListener('click', () => {
+                selectedRating = index + 1;
+                stars.forEach((s, i) => {
+                    if (i < selectedRating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // دالة إرسال التقييم إلى Firestore
+        window.submitFeedback = async function() {
+            if (selectedRating === 0) {
+                alert('الرجاء اختيار التقييم بالنجوم أولاً!');
+                return;
+            }
+
+            const comment = document.getElementById('feedbackComment').value.trim();
+
+            try {
+                await setDoc(doc(collection(db, "feedback")), {
+                    orderId: orderId || "غير محدد",
+                    rating: selectedRating,
+                    comment: comment || "بدون تعليق",
+                    createdAt: new Date()
+                });
+
+                feedbackBox.innerHTML = `
+                    <h3 style="color: #10b981; margin: 0 0 5px 0;">شكراً لتقييمك! ❤️</h3>
+                    <p style="color: var(--text-muted); font-size: 13px; margin: 0;">رأيك يهمنا ويساعدنا في تقديم الأفضل.</p>
+                `;
+            } catch (e) {
+                console.error("Error saving feedback: ", e);
+                alert("حدث خطأ أثناء إرسال التقييم.");
+            }
+        };
 
         window.activateApp = async function() {
             try {
@@ -349,33 +391,6 @@
             }
 
             document.getElementById('enableAudioOverlay').style.display = 'none';
-        };
-
-        // دالة حفظ بيانات الزبون الاختيارية من الصندوق السفلي
-        window.saveCustomerData = async function() {
-            const name = document.getElementById('clientName').value.trim();
-            const contact = document.getElementById('clientContact').value.trim();
-
-            if (!name && !contact) {
-                alert('الرجاء إدخال اسمك أو رقمك للحفظ.');
-                return;
-            }
-
-            try {
-                await setDoc(doc(collection(db, "customers")), {
-                    name: name || "زائر بدون اسم",
-                    contact: contact || "غير محدد",
-                    orderId: orderId || "غير محدد",
-                    createdAt: new Date()
-                });
-
-                document.getElementById('saveMsg').style.display = 'block';
-                document.getElementById('clientName').disabled = true;
-                document.getElementById('clientContact').disabled = true;
-            } catch (e) {
-                console.error("Error saving customer:", e);
-                alert("حدث خطأ أثناء الحفظ.");
-            }
         };
 
         window.stopAlarm = function() {
@@ -401,6 +416,7 @@
                         document.getElementById('statusText3').innerText = "جاهز الآن للاستلام";
 
                         readyBanner.style.display = "block";
+                        feedbackBox.style.display = "block"; // إظهار صندوق التقييم تلقائياً عند الجاهزية
                         
                         if (!alarmManuallyStopped) {
                             stopAlarmBtn.style.display = "block";
@@ -416,10 +432,11 @@
                         document.getElementById('statusText3').innerText = "بانتظار جهوزية الطلب";
                         
                         readyBanner.style.display = "none";
+                        feedbackBox.style.display = "none";
                         stopAlarmBtn.style.display = "none";
                         document.body.classList.remove("flash-bg");
                         alertAudio.pause();
-                        alertAudio.currentTime, 0;
+                        alertAudio.currentTime = 0;
                         alarmManuallyStopped = false;
                     }
                 } else {
@@ -432,14 +449,5 @@
             document.querySelector('.stepper-box').innerHTML = "<p style='color: #ef4444; text-align: center; margin: 10px 0;'>رقم الطلب غير موجود في الرابط.</p>";
         }
     </script>
-    <!-- صندوق التقييم الفوري الذي يظهر عند جاهزية الطلب -->
-<div id="feedbackBox" style="display: none; background: var(--card-bg); padding: 20px; border-radius: 16px; margin-top: 15px; text-align: center;">
-    <h3 style="color: #60a5fa; font-size: 16px; margin-top: 0;">كيف كانت تجربتك اليوم؟</h3>
-    <div style="font-size: 24px; cursor: pointer; margin: 10px 0;" id="starsContainer">
-        ⭐ ⭐ ⭐ ⭐ ⭐
-    </div>
-    <textarea id="feedbackComment" placeholder="ملاحظاتك تحسن خدمتنا (اختياري)" style="width: 100%; padding: 8px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; color: white; font-size: 13px; box-sizing: border-box; outline: none; margin-bottom: 10px;"></textarea>
-    <button onclick="submitFeedback()" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">إرسال التقييم</button>
-</div>
 </body>
 </html>
