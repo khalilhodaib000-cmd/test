@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحليلات وتقييمات المطعم</title>
+    <title>تحليلات وتقييمات الفروع</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -11,6 +11,7 @@
             --primary: #3b82f6;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --success: #10b981;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,6 +29,37 @@
             padding: 15px 20px;
             border-radius: 16px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .top-nav h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #60a5fa;
+        }
+        .nav-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .branch-select {
+            padding: 8px 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+        .back-btn {
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
         }
         .card {
             background: var(--card-bg);
@@ -54,32 +86,32 @@
             border-bottom: 1px solid #334155;
         }
         th { color: var(--text-muted); text-align: right; }
-        .back-btn {
-            background-color: #3b82f6;
-            color: white;
-            text-decoration: none;
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- شريط علوي مع اختيار الفرع -->
         <div class="top-nav">
-            <h2>📊 تحليلات وتقييمات الزبائن</h2>
-            <a href="index.html" class="back-btn">⬅ العودة لوحة الكاشير</a>
+            <h2>📊 تحليلات وتقييمات الفروع</h2>
+            <div class="nav-actions">
+                <select id="branchSelector" class="branch-select" onchange="changeBranchAnalytics()">
+                    <option value="abdoun">فرع عبدون</option>
+                    <option value="jubeiha">فرع الجبيهة</option>
+                    <option value="dawood">فرع صويلح</option>
+                </select>
+                <a href="index.html" class="back-btn">⬅ لوحة الكاشير</a>
+            </div>
         </div>
 
         <div class="card">
-            <p style="color: var(--text-muted); margin: 0;">متوسط تقييم العملاء العام</p>
+            <p style="color: var(--text-muted); margin: 0;" id="branchTitleStat">متوسط تقييم العملاء - فرع عبدون</p>
             <div class="stats-number" id="avgRating">0.0 ⭐</div>
             <p style="font-size: 13px; color: var(--text-muted);" id="totalReviews">إجمالي التقييمات: 0</p>
         </div>
 
         <div class="card" style="text-align: right;">
-            <h3 style="color: #60a5fa; margin-top: 0;">💬 أحدث تعليقات وتقييمات الزبائن</h3>
+            <h3 style="color: #60a5fa; margin-top: 0;">💬 أحدث تعليقات وتقييمات الفرع</h3>
             <table>
                 <thead>
                     <tr>
@@ -97,7 +129,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC7IuqZfeJiBBD2KlH0Y1YFGRKQVE7Xrx4",
@@ -111,38 +143,63 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        onSnapshot(collection(db, "feedback"), (snapshot) => {
-            const tbody = document.getElementById('feedbackTableBody');
-            tbody.innerHTML = "";
+        let currentBranch = "abdoun";
+        let unsubscribe = null;
 
-            let totalScore = 0;
-            let count = snapshot.size;
+        const branchNames = {
+            "abdoun": "فرع عبدون",
+            "jubeiha": "فرع الجبيهة",
+            "dawood": "فرع صويلح"
+        };
 
-            if (count === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">لا توجد تقييمات حتى الآن.</td></tr>`;
-                document.getElementById('avgRating').innerText = "0.0 ⭐";
-                document.getElementById('totalReviews').innerText = "إجمالي التقييمات: 0";
-                return;
-            }
+        window.changeBranchAnalytics = function() {
+            const selector = document.getElementById('branchSelector');
+            currentBranch = selector.value;
+            document.getElementById('branchTitleStat').innerText = `متوسط تقييم العملاء - ${branchNames[currentBranch]}`;
+            loadFeedbackForBranch(currentBranch);
+        };
 
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                totalScore += Number(data.rating || 0);
+        function loadFeedbackForBranch(branch) {
+            if (unsubscribe) unsubscribe();
 
-                const starsStr = "⭐".repeat(data.rating);
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="font-weight: bold;">#${data.orderId}</td>
-                    <td>${starsStr} (${data.rating}/5)</td>
-                    <td style="color: var(--text-muted);">${data.comment}</td>
-                `;
-                tbody.appendChild(tr);
+            const q = query(collection(db, "feedback"), where("branch", "==", branch));
+
+            unsubscribe = onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('feedbackTableBody');
+                tbody.innerHTML = "";
+
+                let totalScore = 0;
+                let count = snapshot.size;
+
+                if (count === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">لا توجد تقييمات لهذا الفرع حتى الآن.</td></tr>`;
+                    document.getElementById('avgRating').innerText = "0.0 ⭐";
+                    document.getElementById('totalReviews').innerText = "إجمالي التقييمات: 0";
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    totalScore += Number(data.rating || 0);
+
+                    const starsStr = "⭐".repeat(data.rating);
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-weight: bold;">#${data.orderId}</td>
+                        <td>${starsStr} (${data.rating}/5)</td>
+                        <td style="color: var(--text-muted);">${data.comment}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                const avg = (totalScore / count).toFixed(1);
+                document.getElementById('avgRating').innerText = avg + " ⭐";
+                document.getElementById('totalReviews').innerText = `إجمالي التقييمات: ${count} تقييم`;
             });
+        }
 
-            const avg = (totalScore / count).toFixed(1);
-            document.getElementById('avgRating').innerText = avg + " ⭐";
-            document.getElementById('totalReviews').innerText = `إجمالي التقييمات: ${count} تقييم`;
-        });
+        // تحميل بيانات الفرع الافتراضي عند فتح الصفحة
+        loadFeedbackForBranch(currentBranch);
     </script>
 </body>
 </html>

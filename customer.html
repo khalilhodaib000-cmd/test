@@ -313,8 +313,18 @@
         const db = getFirestore(app);
         const messaging = getMessaging(app);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const orderId = urlParams.get('order');
+       const urlParams = new URLSearchParams(window.location.search);
+const orderId = urlParams.get('order');
+const branch = urlParams.get('branch') || 'abdoun'; // الفرع الافتراضي
+
+// وعند إرسال التقييم:
+await setDoc(doc(collection(db, "feedback")), {
+    orderId: orderId || "غير محدد",
+    branch: branch,
+    rating: selectedRating,
+    comment: comment || "بدون تعليق",
+    createdAt: new Date()
+});
 
         const step2 = document.getElementById('step2');
         const step3 = document.getElementById('step3');
